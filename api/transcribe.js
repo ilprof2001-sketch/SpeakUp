@@ -1,6 +1,4 @@
-import { OpenAI } from 'openai';
-
-export const config = { api: { bodyParser: false } };
+import OpenAI from 'openai';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -8,50 +6,64 @@ export default async function handler(req, res) {
   }
 
   try {
-    const chunks = [];
-    for await (const chunk of req) chunks.push(chunk);
-    const buffer = Buffer.concat(chunks);
+    const { text, mode, customFocus } = req.body;
 
-    const boundary = req.headers['content-type'].split('boundary=')[1];
-    const parts = buffer.toString('binary').split('--' + boundary);
-    
-    let audioBuffer = null;
-    let filename = 'audio.webm';
-
-    for (const part of parts) {
-      if (part.includes('Content-Disposition') && part.includes('name="audio"')) {
-        const headerEnd = part.indexOf('\r\n\r\n');
-        if (headerEnd === -1) continue;
-        const headerSection = part.substring(0, headerEnd);
-        const filenameMatch = headerSection.match(/filename="([^"]+)"/);
-        if (filenameMatch) filename = filenameMatch[1];
-        const bodyStart = headerEnd + 4;
-        const bodyEnd = part.lastIndexOf('\r\n');
-        const binaryData = part.substring(bodyStart, bodyEnd > bodyStart ? bodyEnd : undefined);
-        audioBuffer = Buffer.from(binaryData, 'binary');
-        break;
-      }
+    if (!text || text.trim().length === 0) {
+      return res.status(400).json({ error: 'No text provided' });
     }
 
-    if (!audioBuffer || audioBuffer.length < 100) {
-      return res.status(400).json({ error: 'No audio data received' });
-    }
+    let modeInstruction = '';
+    if (mode === 'top5') modeInstruction = 'Select the 5 most impactful corrections across all dimensions (grammar, naturalness, fluency, word choice).';
+    else if (mode === 'grammar') modeInstruction = 'Focus only on grammar errors (tense, agreement, articles, prepositions, word order).';
+    else if (mode === 'natural') modeInstruction = 'Focus on phrases that sound too literal or translated from Italian — rewrite them to sound like a native English speaker.';
+    else if (mode === 'simplicity') modeInstruction = 'Focus on overly complex phrases that could be expressed more simply and fluently.';
+    else if (mode === 'custom') modeInstruction = 'Focus specifically on: ' + (customFocus || 'general improvement') + '.';
+    else modeInstruction = 'Select the 5 most impactful corrections across all dimensions.';
+
+    const prompt = `You are an expert English speaking coach. A non-native English speaker (likely Italian) has spoken the following transcript during a real conversation.
+
+Your task: identify exactly 5 high-value corrections. ${modeInstruction}
+
+IMPORTANT RULES:
+- Only select corrections that will genuinely help this speaker improve
+- Do NOT correct every small error — prioritize the most impactful ones
+- Each correction must show a real phrase from the transcript (or a close paraphrase)
+- Explanations must be brief, clear, and encouraging (max 2 sentences)
+- Categories must be one of: grammar, natural, simplicity, improvement, custom
+
+Respond ONLY with a valid JSON array. No preamble, no markdown, no extra text.
+
+Format:
+[
+  {
+    "original": "what they said",
+    "corrected": "better version",
+    "explanation": "brief explanation",
+    "category": "grammar|natural|simplicity|improvement|custom"
+  }
+]
+
+Transcript:
+"""
+${text}
+"""`;
 
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-    const { toFile } = await import('openai');
-    const audioFile = await toFile(audioBuffer, filename, { type: 'audio/webm' });
-
-    const transcription = await openai.audio.transcriptions.create({
-      file: audioFile,
-      model: 'whisper-1',
-      language: 'en',
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o',
+      max_tokens: 1000,
+      messages: [{ role: 'user', content: prompt }]
     });
 
-    return res.status(200).json({ text: transcription.text });
+    const raw = completion.choices[0].message.content || '';
+    const corrections = JSON.parse(raw.replace(/```json|```/g, '').trim());
+
+    return res.status(200).json({ corrections });
 
   } catch (err) {
-    console.error('Transcribe error:', err);
-    return res.status(500).json({ error: err.message || 'Transcription failed' });
+    console.error('Analyse error:', err);
+    return res.status(500).json({ error: err.message || 'Analysis failed' });
   }
 }
+
