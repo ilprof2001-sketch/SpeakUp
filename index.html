@@ -393,62 +393,30 @@ async function analyse() {
 
   const modeNames = { top5:'Top 5 improvements', grammar:'Grammar', natural:'Natural speaking', simplicity:'Simplicity', custom:'Custom focus' };
   const customFocus = document.getElementById('custom-focus-input').value.trim();
-  let modeInstruction = '';
-  if (selectedMode === 'top5') modeInstruction = 'Select the 5 most impactful corrections across all dimensions (grammar, naturalness, fluency, word choice).';
-  else if (selectedMode === 'grammar') modeInstruction = 'Focus only on grammar errors (tense, agreement, articles, prepositions, word order).';
-  else if (selectedMode === 'natural') modeInstruction = 'Focus on phrases that sound too literal or translated from Italian — rewrite them to sound like a native English speaker.';
-  else if (selectedMode === 'simplicity') modeInstruction = 'Focus on overly complex phrases that could be expressed more simply and fluently.';
-  else if (selectedMode === 'custom') modeInstruction = 'Focus specifically on: ' + (customFocus || 'general improvement') + '.';
-
-  const prompt = `You are an expert English speaking coach. A non-native English speaker (likely Italian) has spoken the following transcript during a real conversation.
-
-Your task: identify exactly 5 high-value corrections. ${modeInstruction}
-
-IMPORTANT RULES:
-- Only select corrections that will genuinely help this speaker improve
-- Do NOT correct every small error — prioritize the most impactful ones
-- Each correction must show a real phrase from the transcript (or a close paraphrase)
-- Explanations must be brief, clear, and encouraging (max 2 sentences)
-- Categories must be one of: grammar, natural, simplicity, improvement, custom
-
-Respond ONLY with a valid JSON array. No preamble, no markdown, no extra text.
-
-Format:
-[
-  {
-    "original": "what they said",
-    "corrected": "better version",
-    "explanation": "brief explanation",
-    "category": "grammar|natural|simplicity|improvement|custom"
-  }
-]
-
-Transcript:
-"""
-${text}
-"""`;
 
   const loadingMsgs = ['Analysing your speaking…','Selecting the best corrections…','Almost done…'];
   let mi = 0;
   const loadTick = setInterval(() => { mi=(mi+1)%loadingMsgs.length; document.getElementById('loading-msg').textContent=loadingMsgs[mi]; }, 1800);
 
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const response = await fetch('/api/analyse', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 1000, messages: [{ role: 'user', content: prompt }] })
+      body: JSON.stringify({ text, mode: selectedMode, customFocus })
     });
+
     clearInterval(loadTick);
     const data = await response.json();
-    const raw = data.content.map(i => i.text || '').join('');
-    const corrections = JSON.parse(raw.replace(/```json|```/g,'').trim());
+
+    if (data.error) throw new Error(data.error);
+
     document.getElementById('loading-state').classList.remove('visible');
-    renderResults(corrections, modeNames[selectedMode]);
+    renderResults(data.corrections, modeNames[selectedMode]);
   } catch(err) {
     clearInterval(loadTick);
     document.getElementById('loading-state').classList.remove('visible');
     document.getElementById('step-analyse').style.display = 'block';
-    showError('Analysis failed. Please try again.');
+    showError('Analysis failed: ' + (err.message || 'please try again'));
   }
 }
 
