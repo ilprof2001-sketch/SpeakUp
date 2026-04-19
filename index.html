@@ -254,16 +254,16 @@ async function initClerk() {
   const key = window.__CLERK_KEY__;
   if (!key || key.startsWith('REPLACE')) return;
   const script = document.createElement('script');
+  script.setAttribute('data-clerk-publishable-key', key);
   script.src = 'https://unpkg.com/@clerk/clerk-js@5/dist/clerk.browser.js';
+  script.async = true;
   script.onload = async () => {
-    const clerk = new window.Clerk(key);
-await clerk.load({ publishableKey: key });
-    window.__clerk = clerk;
-    clerk.addListener(({ user }) => {
+    await window.Clerk.load();
+    window.__clerk = window.Clerk;
+    window.Clerk.addListener(({ user }) => {
       updateUserUI();
       if (user && pendingAnalyse) {
         pendingAnalyse = false;
-        document.getElementById('login-overlay').classList.remove('visible');
         runAnalysis();
       }
     });
