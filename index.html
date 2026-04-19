@@ -255,6 +255,7 @@ async function initClerk() {
   if (!key || key.startsWith('REPLACE')) return;
   const script = document.createElement('script');
   script.setAttribute('data-clerk-publishable-key', key);
+  script.setAttribute('data-clerk-publishable-key', key);
   script.src = 'https://unpkg.com/@clerk/clerk-js@5/dist/clerk.browser.js';
   script.async = true;
   script.onload = async () => {
@@ -269,9 +270,6 @@ async function initClerk() {
     });
     updateUserUI();
   };
-  document.head.appendChild(script);
-}
-
 function updateUserUI() {
   const clerk = window.__clerk;
   if (!clerk) return;
