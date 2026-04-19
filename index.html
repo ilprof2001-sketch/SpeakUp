@@ -257,7 +257,7 @@ async function initClerk() {
   script.src = 'https://unpkg.com/@clerk/clerk-js@5/dist/clerk.browser.js';
   script.onload = async () => {
     const clerk = new window.Clerk(key);
-    await clerk.load();
+await clerk.load({ publishableKey: key });
     window.__clerk = clerk;
     clerk.addListener(({ user }) => {
       updateUserUI();
