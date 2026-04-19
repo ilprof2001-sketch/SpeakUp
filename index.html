@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SpeakUp — AI English Speaking Coach</title>
+<script>
+  // Replace with your actual Clerk publishable key
+  window.__CLERK_KEY__ = 'pk_test_c3VubnktcGFuZ29saW4tMzkuY2xlcmsuYWNjb3VudHMuZGV2JA';
+</script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap');
 
@@ -30,10 +34,17 @@
   body { font-family: 'DM Sans', sans-serif; font-size: 15px; color: var(--ink); background: var(--surface); min-height: 100vh; line-height: 1.6; }
   .app { max-width: 680px; margin: 0 auto; padding: 0 24px 60px; }
 
-  .header { padding: 28px 0 20px; border-bottom: 0.5px solid var(--border); margin-bottom: 32px; display: flex; align-items: baseline; justify-content: space-between; }
+  .header { padding: 28px 0 20px; border-bottom: 0.5px solid var(--border); margin-bottom: 32px; display: flex; align-items: center; justify-content: space-between; }
   .logo { font-family: 'DM Serif Display', serif; font-size: 22px; letter-spacing: -0.3px; color: var(--ink); }
   .logo em { font-style: italic; color: var(--accent); }
-  .free-badge { font-size: 12px; font-weight: 500; color: var(--accent-text); background: var(--accent-light); padding: 3px 10px; border-radius: 20px; }
+
+  .header-right { display: flex; align-items: center; gap: 12px; }
+  .session-badge { font-size: 12px; font-weight: 500; color: var(--accent-text); background: var(--accent-light); padding: 3px 10px; border-radius: 20px; }
+  .session-badge.warn { background: #fef3e2; color: #92570a; }
+  .session-badge.out { background: var(--red-light); color: var(--red); }
+
+  .user-btn { font-size: 13px; font-weight: 500; color: var(--ink-muted); background: none; border: 0.5px solid var(--border-med); border-radius: 8px; padding: 6px 12px; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: background 0.15s; }
+  .user-btn:hover { background: var(--surface-2); }
 
   .section { margin-bottom: 28px; }
   .label { font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 10px; }
@@ -131,6 +142,31 @@
   .manual-textarea { display: none; width: 100%; min-height: 120px; border: 0.5px solid var(--border-med); border-radius: var(--r); padding: 12px 14px; font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--ink); background: var(--surface); resize: vertical; outline: none; line-height: 1.6; margin-top: 10px; }
   .manual-textarea:focus { border-color: var(--accent); }
   .manual-textarea.visible { display: block; }
+
+  /* PAYWALL */
+  .paywall-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; padding: 24px; }
+  .paywall-overlay.visible { display: flex; }
+  .paywall-card { background: var(--surface); border-radius: var(--r-lg); padding: 36px 32px; max-width: 420px; width: 100%; text-align: center; }
+  .paywall-icon { font-size: 32px; margin-bottom: 16px; }
+  .paywall-title { font-family: 'DM Serif Display', serif; font-size: 24px; color: var(--ink); margin-bottom: 8px; }
+  .paywall-subtitle { font-size: 14px; color: var(--ink-muted); line-height: 1.6; margin-bottom: 24px; }
+  .paywall-price { font-size: 28px; font-weight: 500; color: var(--ink); margin-bottom: 4px; }
+  .paywall-price span { font-size: 14px; color: var(--ink-muted); font-weight: 400; }
+  .paywall-features { text-align: left; margin: 20px 0 24px; display: flex; flex-direction: column; gap: 8px; }
+  .paywall-feature { font-size: 13px; color: var(--ink-muted); display: flex; align-items: center; gap: 8px; }
+  .paywall-feature::before { content: '✓'; color: var(--accent); font-weight: 500; }
+  .btn-upgrade { width: 100%; padding: 14px; border-radius: var(--r); border: none; background: var(--accent); color: white; font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 500; cursor: pointer; margin-bottom: 10px; }
+  .btn-upgrade:hover { opacity: 0.9; }
+  .paywall-dismiss { font-size: 12px; color: var(--ink-faint); cursor: pointer; background: none; border: none; font-family: 'DM Sans', sans-serif; }
+  .paywall-dismiss:hover { color: var(--ink-muted); }
+
+  /* LOGIN OVERLAY */
+  .login-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; padding: 24px; }
+  .login-overlay.visible { display: flex; }
+  .login-card { background: var(--surface); border-radius: var(--r-lg); padding: 36px 32px; max-width: 420px; width: 100%; text-align: center; }
+  .login-title { font-family: 'DM Serif Display', serif; font-size: 22px; color: var(--ink); margin-bottom: 8px; }
+  .login-subtitle { font-size: 14px; color: var(--ink-muted); line-height: 1.6; margin-bottom: 24px; }
+  #clerk-login-mount { min-height: 100px; }
 </style>
 </head>
 <body>
@@ -138,7 +174,10 @@
 
   <div class="header">
     <div class="logo">Speak<em>Up</em></div>
-    <div class="free-badge">3 free sessions</div>
+    <div class="header-right">
+      <div class="session-badge" id="session-badge">3 free sessions</div>
+      <button class="user-btn" id="user-btn" onclick="handleUserBtn()" style="display:none"></button>
+    </div>
   </div>
 
   <div class="section" id="step-mode">
@@ -237,7 +276,36 @@
   </div>
 
 </div>
+
+<!-- LOGIN OVERLAY -->
+<div class="login-overlay" id="login-overlay">
+  <div class="login-card">
+    <div class="login-title">Sign in to analyse</div>
+    <div class="login-subtitle">Create a free account to get your first 3 analyses. No credit card required.</div>
+    <div id="clerk-login-mount"></div>
+  </div>
+</div>
+
+<!-- PAYWALL OVERLAY -->
+<div class="paywall-overlay" id="paywall-overlay">
+  <div class="paywall-card">
+    <div class="paywall-icon">✦</div>
+    <div class="paywall-title">You've used your 3 free sessions</div>
+    <div class="paywall-subtitle">Upgrade to Premium to keep improving your English after every conversation.</div>
+    <div class="paywall-price">€9.99 <span>/ month</span></div>
+    <div class="paywall-features">
+      <div class="paywall-feature">Unlimited sessions</div>
+      <div class="paywall-feature">Sessions up to 30 minutes</div>
+      <div class="paywall-feature">Error history & progress tracking</div>
+      <div class="paywall-feature">All analysis modes</div>
+    </div>
+    <button class="btn-upgrade" onclick="handleUpgrade()">Upgrade to Premium</button>
+    <button class="paywall-dismiss" onclick="closePaywall()">Maybe later</button>
+  </div>
+</div>
+
 <script>
+const MAX_SESSIONS_FREE = 3;
 const MAX_SECONDS = 300;
 let selectedMode = 'top5';
 let isRecording = false;
@@ -247,9 +315,93 @@ let timerInterval = null;
 let waveInterval = null;
 let elapsed = 0;
 let manualVisible = false;
+let clerkUser = null;
+let pendingAnalyse = false;
 
 const catClasses = { grammar:'cat-grammar', natural:'cat-natural', simplicity:'cat-simplicity', improvement:'cat-improvement', custom:'cat-custom' };
 
+// ——— CLERK INIT ———
+async function initClerk() {
+  const key = window.__CLERK_KEY__;
+  if (!key || key.startsWith('REPLACE')) return;
+
+  const script = document.createElement('script');
+  script.src = 'https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js';
+  script.onload = async () => {
+    const clerk = new window.Clerk(key);
+    await clerk.load();
+    window.__clerk = clerk;
+
+    clerk.addListener(({ user }) => {
+      clerkUser = user;
+      updateUserUI();
+      if (user && pendingAnalyse) {
+        pendingAnalyse = false;
+        document.getElementById('login-overlay').classList.remove('visible');
+        runAnalysis();
+      }
+    });
+
+    updateUserUI();
+  };
+  document.head.appendChild(script);
+}
+
+function updateUserUI() {
+  const clerk = window.__clerk;
+  if (!clerk) return;
+  const user = clerk.user;
+  const btn = document.getElementById('user-btn');
+  const badge = document.getElementById('session-badge');
+
+  if (user) {
+    btn.style.display = 'block';
+    btn.textContent = user.firstName || user.emailAddresses[0]?.emailAddress || 'Account';
+    const sessions = getSessions();
+    const remaining = Math.max(0, MAX_SESSIONS_FREE - sessions);
+    if (remaining === 0) {
+      badge.textContent = 'Upgrade to Premium';
+      badge.className = 'session-badge out';
+    } else if (remaining === 1) {
+      badge.textContent = remaining + ' session left';
+      badge.className = 'session-badge warn';
+    } else {
+      badge.textContent = remaining + ' free sessions left';
+      badge.className = 'session-badge';
+    }
+  } else {
+    btn.style.display = 'none';
+    badge.textContent = '3 free sessions';
+    badge.className = 'session-badge';
+  }
+}
+
+function handleUserBtn() {
+  const clerk = window.__clerk;
+  if (!clerk) return;
+  if (clerk.user) {
+    clerk.signOut();
+  }
+}
+
+// ——— SESSION COUNTING ———
+function getStorageKey() {
+  const clerk = window.__clerk;
+  if (clerk && clerk.user) return 'speakup_sessions_' + clerk.user.id;
+  return 'speakup_sessions_anon';
+}
+
+function getSessions() {
+  return parseInt(localStorage.getItem(getStorageKey()) || '0');
+}
+
+function incrementSessions() {
+  const key = getStorageKey();
+  const current = parseInt(localStorage.getItem(key) || '0');
+  localStorage.setItem(key, current + 1);
+}
+
+// ——— MODE SELECTION ———
 function selectMode(el) {
   document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
   el.classList.add('active');
@@ -266,6 +418,7 @@ function toggleManual() {
   }
 }
 
+// ——— RECORDING ———
 function toggleRecord() { if (!isRecording) startRecording(); }
 
 function getSupportedMimeType() {
@@ -374,13 +527,27 @@ async function stopRecording() {
   }
 }
 
-function showError(msg) {
-  const el = document.getElementById('error-box');
-  el.textContent = msg;
-  el.classList.add('visible');
+// ——— ANALYSE ———
+async function analyse() {
+  const clerk = window.__clerk;
+
+  // Check login
+  if (!clerk || !clerk.user) {
+    pendingAnalyse = true;
+    showLoginOverlay();
+    return;
+  }
+
+  // Check session limit
+  if (getSessions() >= MAX_SESSIONS_FREE) {
+    document.getElementById('paywall-overlay').classList.add('visible');
+    return;
+  }
+
+  runAnalysis();
 }
 
-async function analyse() {
+async function runAnalysis() {
   const textFromRecording = document.getElementById('transcript-box').textContent.trim();
   const textFromManual = document.getElementById('manual-textarea').value.trim();
   const text = textFromRecording || textFromManual;
@@ -407,8 +574,10 @@ async function analyse() {
 
     clearInterval(loadTick);
     const data = await response.json();
-
     if (data.error) throw new Error(data.error);
+
+    incrementSessions();
+    updateUserUI();
 
     document.getElementById('loading-state').classList.remove('visible');
     renderResults(data.corrections, modeNames[selectedMode]);
@@ -420,6 +589,29 @@ async function analyse() {
   }
 }
 
+// ——— LOGIN OVERLAY ———
+function showLoginOverlay() {
+  const overlay = document.getElementById('login-overlay');
+  overlay.classList.add('visible');
+  const clerk = window.__clerk;
+  if (clerk) {
+    clerk.mountSignIn(document.getElementById('clerk-login-mount'), {
+      afterSignInUrl: window.location.href,
+      afterSignUpUrl: window.location.href,
+    });
+  }
+}
+
+// ——— PAYWALL ———
+function closePaywall() {
+  document.getElementById('paywall-overlay').classList.remove('visible');
+}
+
+function handleUpgrade() {
+  alert('Stripe integration coming soon! For now, contact us at hello@speakup.app');
+}
+
+// ——— RENDER ———
 function renderResults(corrections, modeName) {
   document.getElementById('results-mode-tag').textContent = modeName;
   const list = document.getElementById('corrections-list');
@@ -438,6 +630,12 @@ function renderResults(corrections, modeName) {
     </div>`;
   });
   document.getElementById('results-section').classList.add('visible');
+}
+
+function showError(msg) {
+  const el = document.getElementById('error-box');
+  el.textContent = msg;
+  el.classList.add('visible');
 }
 
 function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -463,6 +661,9 @@ function newSession() {
   const heights = [8,14,6,18,10,22,8,16,12,20,7,15];
   for (let i = 0; i < 12; i++) document.getElementById('wb'+i).style.height = heights[i]+'px';
 }
+
+// Init
+initClerk();
 </script>
 </body>
 </html>
