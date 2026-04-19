@@ -435,11 +435,14 @@ async function runAnalysis() {
 }
 
 function showLoginOverlay() {
-  document.getElementById('login-overlay').classList.add('visible');
   const clerk = window.__clerk;
-  if (clerk) clerk.mountSignIn(document.getElementById('clerk-login-mount'),{afterSignInUrl:window.location.href,afterSignUpUrl:window.location.href});
+  if (clerk) {
+    clerk.openSignIn({
+      afterSignInUrl: window.location.href,
+      afterSignUpUrl: window.location.href,
+    });
+  }
 }
-
 function closePaywall() { document.getElementById('paywall-overlay').classList.remove('visible'); }
 function handleUpgrade() { alert('Stripe integration coming soon!'); }
 
