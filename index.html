@@ -14,6 +14,7 @@
     --surface: #ffffff;
     --surface-2: #f3f4f8;
     --accent: #6c47ff;
+    --accent-2: #4f35cc;
     --accent-light: #ede9ff;
     --accent-text: #4a2fd4;
     --text: #1a1b2e;
@@ -31,11 +32,15 @@
     --shadow-md: 0 4px 6px rgba(0,0,0,0.05), 0 2px 4px rgba(0,0,0,0.04);
   }
 
+  /* 1. SFONDO CON GRADIENT MESH SOTTILE */
   body {
     font-family: 'Plus Jakarta Sans', sans-serif;
     font-size: 14px;
     color: var(--text);
     background: var(--bg);
+    background-image:
+      radial-gradient(ellipse at 10% 10%, rgba(108,71,255,0.06) 0%, transparent 50%),
+      radial-gradient(ellipse at 90% 90%, rgba(79,53,204,0.05) 0%, transparent 50%);
     min-height: 100vh;
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
@@ -54,8 +59,10 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    border-bottom: 1px solid var(--border);
   }
 
+  /* 2. LOGO CON GRADIENTE */
   .logo {
     font-size: 20px;
     font-weight: 700;
@@ -64,7 +71,10 @@
   }
   .logo em {
     font-style: normal;
-    color: var(--accent);
+    background: linear-gradient(135deg, #6c47ff 0%, #4f35cc 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 
   .session-badge {
@@ -78,7 +88,6 @@
   .session-badge.warn { color: #92400e; background: #fffbeb; }
   .session-badge.out { color: var(--red); background: var(--red-light); }
 
-  /* SECTIONS */
   .section { margin-bottom: 24px; }
 
   .label {
@@ -104,7 +113,7 @@
     cursor: pointer;
     background: var(--surface);
     text-align: center;
-    transition: all 0.15s;
+    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -114,11 +123,15 @@
   .mode-btn:hover {
     border-color: var(--accent);
     background: var(--accent-light);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(108,71,255,0.15);
   }
+  /* 3. MODE CARD ATTIVA CON GRADIENTE */
   .mode-btn.active {
-    background: var(--accent);
-    border-color: var(--accent);
-    box-shadow: 0 4px 12px rgba(108,71,255,0.3);
+    background: linear-gradient(135deg, #6c47ff 0%, #4f35cc 100%);
+    border-color: transparent;
+    box-shadow: 0 4px 16px rgba(108,71,255,0.35);
+    transform: translateY(-1px);
   }
   .mode-icon { font-size: 16px; line-height: 1; }
   .mode-btn.active .mode-icon { filter: brightness(10); }
@@ -159,6 +172,23 @@
     align-items: center;
     gap: 20px;
     box-shadow: var(--shadow-md);
+    position: relative;
+    overflow: hidden;
+  }
+  /* Sottile decorazione in cima alla recorder card */
+  .recorder-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #6c47ff, #4f35cc, #6c47ff);
+    background-size: 200% 100%;
+    animation: shimmerBar 3s ease infinite;
+  }
+  @keyframes shimmerBar {
+    0% { background-position: 0% 0; }
+    50% { background-position: 100% 0; }
+    100% { background-position: 0% 0; }
   }
 
   .rec-timer {
@@ -168,6 +198,7 @@
     letter-spacing: -3px;
     line-height: 1;
     font-variant-numeric: tabular-nums;
+    transition: color 0.4s ease;
   }
   .rec-timer.active { color: var(--red); }
 
@@ -181,31 +212,44 @@
     width: 3px;
     background: var(--border);
     border-radius: 3px;
-    transition: height 0.08s;
+    transition: height 0.08s ease;
   }
-  .rec-waveform.active .wave-bar { background: var(--accent); }
+  .rec-waveform.active .wave-bar {
+    background: linear-gradient(to top, #6c47ff, #a78bfa);
+  }
 
   .rec-controls { display: flex; gap: 12px; align-items: center; }
 
+  /* 4. BOTTONE RECORD CON PULSE ANIMATO */
   .btn-record {
     width: 56px;
     height: 56px;
     border-radius: 50%;
     border: none;
-    background: var(--accent);
+    background: linear-gradient(135deg, #6c47ff 0%, #4f35cc 100%);
     color: white;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.15s;
+    transition: all 0.2s;
     box-shadow: 0 4px 14px rgba(108,71,255,0.35);
+    position: relative;
   }
-  .btn-record:hover { transform: scale(1.05); box-shadow: 0 6px 18px rgba(108,71,255,0.45); }
+  .btn-record:hover {
+    transform: scale(1.07);
+    box-shadow: 0 8px 24px rgba(108,71,255,0.5);
+  }
   .btn-record:active { transform: scale(0.97); }
   .btn-record.recording {
-    background: var(--red);
-    box-shadow: 0 4px 14px rgba(239,68,68,0.35);
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    box-shadow: 0 4px 14px rgba(239,68,68,0.4);
+    animation: recordPulse 1.5s ease infinite;
+  }
+  @keyframes recordPulse {
+    0% { box-shadow: 0 0 0 0 rgba(239,68,68,0.4); }
+    50% { box-shadow: 0 0 0 12px rgba(239,68,68,0); }
+    100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); }
   }
   .btn-record svg { width: 20px; height: 20px; }
 
@@ -235,9 +279,15 @@
 
   .limit-bar-wrap { display: flex; align-items: center; gap: 10px; width: 100%; }
   .limit-bar { flex: 1; height: 4px; background: var(--border); border-radius: 4px; overflow: hidden; }
-  .limit-bar-fill { height: 100%; background: var(--accent); border-radius: 4px; width: 0%; transition: width 1s linear, background 0.3s; }
-  .limit-bar-fill.warn { background: #f59e0b; }
-  .limit-bar-fill.danger { background: var(--red); }
+  .limit-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #6c47ff, #4f35cc);
+    border-radius: 4px;
+    width: 0%;
+    transition: width 1s linear, background 0.3s;
+  }
+  .limit-bar-fill.warn { background: linear-gradient(90deg, #f59e0b, #d97706); }
+  .limit-bar-fill.danger { background: linear-gradient(90deg, #ef4444, #dc2626); }
   .limit-label { font-size: 11px; font-weight: 500; color: var(--text-faint); white-space: nowrap; }
 
   .transcribing-badge { display: none; align-items: center; gap: 8px; font-size: 12px; font-weight: 500; color: var(--accent); }
@@ -279,10 +329,13 @@
     outline: none;
     line-height: 1.7;
     margin-top: 10px;
-    transition: border-color 0.15s;
+    transition: border-color 0.15s, box-shadow 0.15s;
     box-shadow: var(--shadow);
   }
-  .manual-textarea:focus { border-color: var(--accent); }
+  .manual-textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(108,71,255,0.1);
+  }
   .manual-textarea::placeholder { color: var(--text-faint); }
   .manual-textarea.visible { display: block; }
 
@@ -304,23 +357,39 @@
     box-shadow: var(--shadow);
   }
 
-  /* ANALYSE */
+  /* 5. BOTTONE ANALYSE CON GRADIENTE E SHIMMER */
   .btn-analyse {
     width: 100%;
     padding: 15px;
     border-radius: var(--r);
     border: none;
-    background: var(--accent);
+    background: linear-gradient(135deg, #6c47ff 0%, #4f35cc 100%);
+    background-size: 200% 100%;
     color: white;
     font-family: 'Plus Jakarta Sans', sans-serif;
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.15s;
+    transition: all 0.2s;
     box-shadow: 0 4px 14px rgba(108,71,255,0.3);
+    position: relative;
+    overflow: hidden;
   }
-  .btn-analyse:hover { background: #5a38e8; box-shadow: 0 6px 18px rgba(108,71,255,0.4); }
-  .btn-analyse:active { transform: scale(0.99); }
+  .btn-analyse::after {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+    transition: left 0.4s ease;
+  }
+  .btn-analyse:hover {
+    box-shadow: 0 8px 24px rgba(108,71,255,0.45);
+    transform: translateY(-1px);
+  }
+  .btn-analyse:hover::after { left: 150%; }
+  .btn-analyse:active { transform: scale(0.99) translateY(0); }
 
   /* LOADING */
   .loading-state {
@@ -369,23 +438,31 @@
     border-radius: 20px;
   }
 
+  /* 6. CORRECTION CARD CON LIFT HOVER */
   .correction-card {
     border: 1.5px solid var(--border);
     border-radius: var(--r-lg);
     padding: 18px 20px;
     margin-bottom: 10px;
     background: var(--surface);
-    transition: all 0.15s;
+    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
     box-shadow: var(--shadow);
-    animation: fadeUp 0.3s ease both;
+    animation: fadeUp 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
   }
   .correction-card:nth-child(1) { animation-delay: 0s; }
   .correction-card:nth-child(2) { animation-delay: 0.07s; }
   .correction-card:nth-child(3) { animation-delay: 0.14s; }
   .correction-card:nth-child(4) { animation-delay: 0.21s; }
   .correction-card:nth-child(5) { animation-delay: 0.28s; }
-  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-  .correction-card:hover { border-color: var(--accent); box-shadow: 0 4px 12px rgba(108,71,255,0.1); }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .correction-card:hover {
+    border-color: var(--accent);
+    box-shadow: 0 8px 24px rgba(108,71,255,0.12);
+    transform: translateY(-3px);
+  }
 
   .corr-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
   .corr-num { font-size: 11px; font-weight: 600; color: var(--text-faint); letter-spacing: 0.06em; }
@@ -470,12 +547,14 @@
     position: fixed;
     inset: 0;
     background: rgba(26,27,46,0.6);
-    backdrop-filter: blur(6px);
+    backdrop-filter: blur(8px);
     z-index: 100;
     align-items: center;
     justify-content: center;
     padding: 24px;
+    animation: fadeIn 0.2s ease;
   }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
   .paywall-overlay.visible { display: flex; }
   .paywall-card {
     background: var(--surface);
@@ -485,8 +564,10 @@
     max-width: 400px;
     width: 100%;
     text-align: center;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+    box-shadow: 0 24px 60px rgba(0,0,0,0.18);
+    animation: slideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(20px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
   .paywall-icon { font-size: 36px; margin-bottom: 16px; }
   .paywall-title { font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 8px; letter-spacing: -0.3px; }
   .paywall-subtitle { font-size: 14px; color: var(--text-muted); line-height: 1.7; margin-bottom: 24px; }
@@ -509,7 +590,7 @@
     padding: 15px;
     border-radius: var(--r);
     border: none;
-    background: var(--accent);
+    background: linear-gradient(135deg, #6c47ff 0%, #4f35cc 100%);
     color: white;
     font-family: 'Plus Jakarta Sans', sans-serif;
     font-size: 14px;
@@ -517,9 +598,9 @@
     cursor: pointer;
     margin-bottom: 12px;
     box-shadow: 0 4px 14px rgba(108,71,255,0.3);
-    transition: all 0.15s;
+    transition: all 0.2s;
   }
-  .btn-upgrade:hover { background: #5a38e8; }
+  .btn-upgrade:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(108,71,255,0.45); }
   .paywall-dismiss {
     font-size: 13px;
     font-weight: 500;
@@ -710,6 +791,31 @@ async function startRecording() {
   let stream;
   try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); }
   catch(e) { showError('Microphone access denied. Please allow microphone access and try again.'); return; }
+
+  /* 7. WAVEFORM REALE CON WEB AUDIO API */
+  try {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const source = audioCtx.createMediaStreamSource(stream);
+    const analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 256;
+    source.connect(analyser);
+    const dataArray = new Uint8Array(analyser.frequencyBinCount);
+    waveInterval = setInterval(() => {
+      analyser.getByteFrequencyData(dataArray);
+      const bars = 12;
+      const step = Math.floor(dataArray.length / bars);
+      for (let i = 0; i < bars; i++) {
+        const value = dataArray[i * step];
+        const h = Math.max(3, Math.min(22, (value / 255) * 22));
+        document.getElementById('wb'+i).style.height = h + 'px';
+      }
+    }, 50);
+  } catch(e) {
+    waveInterval = setInterval(() => {
+      for (let i=0;i<12;i++) document.getElementById('wb'+i).style.height=(Math.floor(Math.random()*18)+3)+'px';
+    }, 100);
+  }
+
   const mimeType = getSupportedMimeType();
   mediaRecorder = new MediaRecorder(stream, mimeType ? { mimeType } : {});
   mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
@@ -732,9 +838,6 @@ async function startRecording() {
     document.getElementById('limit-label').textContent = Math.floor(rem/60)+':'+String(rem%60).padStart(2,'0')+' left';
     if (elapsed>=MAX_SECONDS) stopRecording();
   }, 1000);
-  waveInterval = setInterval(() => {
-    for (let i=0;i<12;i++) document.getElementById('wb'+i).style.height=(Math.floor(Math.random()*18)+3)+'px';
-  }, 100);
 }
 
 async function stopRecording() {
