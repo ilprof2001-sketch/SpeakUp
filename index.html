@@ -4,9 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Aftercall — AI English Speaking Coach</title>
-<script>
-  window.__CLERK_KEY__ = 'pk_live_Y2xlcmsuYWZ0ZXJjYWxsLnRlY2gk';
-</script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap');
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -25,10 +22,6 @@
   .logo em { font-style: italic; color: var(--accent); }
   .header-right { display: flex; align-items: center; gap: 12px; }
   .session-badge { font-size: 12px; font-weight: 500; color: var(--accent-text); background: var(--accent-light); padding: 3px 10px; border-radius: 20px; }
-  .session-badge.warn { background: #fef3e2; color: #92570a; }
-  .session-badge.out { background: var(--red-light); color: var(--red); }
-  .user-btn { font-size: 13px; font-weight: 500; color: var(--ink-muted); background: none; border: 0.5px solid var(--border-med); border-radius: 8px; padding: 6px 12px; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: background 0.15s; }
-  .user-btn:hover { background: var(--surface-2); }
   .section { margin-bottom: 28px; }
   .label { font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 10px; }
   .modes { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; }
@@ -121,12 +114,6 @@
   .btn-upgrade { width: 100%; padding: 14px; border-radius: var(--r); border: none; background: var(--accent); color: white; font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 500; cursor: pointer; margin-bottom: 10px; }
   .btn-upgrade:hover { opacity: 0.9; }
   .paywall-dismiss { font-size: 12px; color: var(--ink-faint); cursor: pointer; background: none; border: none; font-family: 'DM Sans', sans-serif; }
-  .login-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; padding: 24px; }
-  .login-overlay.visible { display: flex; }
-  .login-card { background: var(--surface); border-radius: var(--r-lg); padding: 36px 32px; max-width: 420px; width: 100%; text-align: center; }
-  .login-title { font-family: 'DM Serif Display', serif; font-size: 22px; color: var(--ink); margin-bottom: 8px; }
-  .login-subtitle { font-size: 14px; color: var(--ink-muted); line-height: 1.6; margin-bottom: 24px; }
-  #clerk-login-mount { min-height: 100px; }
 </style>
 </head>
 <body>
@@ -135,7 +122,6 @@
     <div class="logo">After<em>call</em></div>
     <div class="header-right">
       <div class="session-badge" id="session-badge">3 free sessions</div>
-      <button class="user-btn" id="user-btn" onclick="handleUserBtn()" style="display:none"></button>
     </div>
   </div>
 
@@ -211,14 +197,6 @@
   </div>
 </div>
 
-<div class="login-overlay" id="login-overlay">
-  <div class="login-card">
-    <div class="login-title">Sign in to analyse</div>
-    <div class="login-subtitle">Create a free account to get your first 3 analyses. No credit card required.</div>
-    <div id="clerk-login-mount"></div>
-  </div>
-</div>
-
 <div class="paywall-overlay" id="paywall-overlay">
   <div class="paywall-card">
     <div class="paywall-icon">✦</div>
@@ -247,44 +225,17 @@ let timerInterval = null;
 let waveInterval = null;
 let elapsed = 0;
 let manualVisible = false;
-let pendingAnalyse = false;
 const catClasses = { grammar:'cat-grammar', natural:'cat-natural', simplicity:'cat-simplicity', improvement:'cat-improvement', custom:'cat-custom' };
 
-async function initClerk() {
-  window.__clerk = { user: { id: 'guest', firstName: 'Guest', emailAddresses: [] } };
-  updateUserUI();
-}
-    });
-    updateUserUI();
-  };
-function updateUserUI() {
-  const clerk = window.__clerk;
-  if (!clerk) return;
-  const user = clerk.user;
-  const btn = document.getElementById('user-btn');
+function getSessions() { return parseInt(localStorage.getItem('aftercall_sessions') || '0'); }
+function incrementSessions() { localStorage.setItem('aftercall_sessions', getSessions() + 1); }
+function updateBadge() {
+  const remaining = Math.max(0, MAX_SESSIONS_FREE - getSessions());
   const badge = document.getElementById('session-badge');
-  if (user) {
-    btn.style.display = 'block';
-    btn.textContent = user.firstName || user.emailAddresses[0]?.emailAddress || 'Account';
-    const remaining = Math.max(0, MAX_SESSIONS_FREE - getSessions());
-    if (remaining === 0) { badge.textContent = 'Upgrade to Premium'; badge.className = 'session-badge out'; }
-    else if (remaining === 1) { badge.textContent = '1 session left'; badge.className = 'session-badge warn'; }
-    else { badge.textContent = remaining + ' free sessions left'; badge.className = 'session-badge'; }
-  } else {
-    btn.style.display = 'none';
-    badge.textContent = '3 free sessions';
-    badge.className = 'session-badge';
-  }
+  if (remaining === 0) { badge.textContent = 'Upgrade to Premium'; badge.style.background = 'var(--red-light)'; badge.style.color = 'var(--red)'; }
+  else if (remaining === 1) { badge.textContent = '1 session left'; badge.style.background = '#fef3e2'; badge.style.color = '#92570a'; }
+  else { badge.textContent = remaining + ' free sessions left'; }
 }
-
-function handleUserBtn() { const c = window.__clerk; if (c && c.user) c.signOut(); }
-
-function getStorageKey() {
-  const c = window.__clerk;
-  return (c && c.user) ? 'aftercall_sessions_' + c.user.id : 'aftercall_sessions_anon';
-}
-function getSessions() { return parseInt(localStorage.getItem(getStorageKey()) || '0'); }
-function incrementSessions() { const k = getStorageKey(); localStorage.setItem(k, parseInt(localStorage.getItem(k)||'0') + 1); }
 
 function selectMode(el) {
   document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
@@ -296,7 +247,10 @@ function selectMode(el) {
 function toggleManual() {
   manualVisible = !manualVisible;
   document.getElementById('manual-textarea').classList.toggle('visible', manualVisible);
-  if (manualVisible) { document.getElementById('step-analyse').style.display = 'block'; document.getElementById('transcript-section').classList.remove('visible'); }
+  if (manualVisible) {
+    document.getElementById('step-analyse').style.display = 'block';
+    document.getElementById('transcript-section').classList.remove('visible');
+  }
 }
 
 function toggleRecord() { if (!isRecording) startRecording(); }
@@ -385,13 +339,10 @@ async function stopRecording() {
 }
 
 async function analyse() {
-  const clerk = window.__clerk;
-  if (!clerk || !clerk.user) { pendingAnalyse = true; showLoginOverlay(); return; }
-  if (getSessions() >= MAX_SESSIONS_FREE) { document.getElementById('paywall-overlay').classList.add('visible'); return; }
-  runAnalysis();
-}
-
-async function runAnalysis() {
+  if (getSessions() >= MAX_SESSIONS_FREE) {
+    document.getElementById('paywall-overlay').classList.add('visible');
+    return;
+  }
   const text = document.getElementById('transcript-box').textContent.trim() || document.getElementById('manual-textarea').value.trim();
   if (!text) { showError('No text to analyse. Record your voice or paste a transcript.'); return; }
   document.getElementById('step-analyse').style.display = 'none';
@@ -408,7 +359,7 @@ async function runAnalysis() {
     clearInterval(loadTick);
     const data = await response.json();
     if (data.error) throw new Error(data.error);
-    incrementSessions(); updateUserUI();
+    incrementSessions(); updateBadge();
     document.getElementById('loading-state').classList.remove('visible');
     renderResults(data.corrections, modeNames[selectedMode]);
   } catch(err) {
@@ -419,15 +370,6 @@ async function runAnalysis() {
   }
 }
 
-function showLoginOverlay() {
-  const clerk = window.__clerk;
-  if (clerk) {
-    clerk.openSignIn({
-      afterSignInUrl: window.location.href,
-      afterSignUpUrl: window.location.href,
-    });
-  }
-}
 function closePaywall() { document.getElementById('paywall-overlay').classList.remove('visible'); }
 function handleUpgrade() { alert('Stripe integration coming soon!'); }
 
@@ -476,7 +418,7 @@ function newSession() {
   for(let i=0;i<12;i++) document.getElementById('wb'+i).style.height=heights[i]+'px';
 }
 
-initClerk();
+updateBadge();
 </script>
 </body>
 </html>
