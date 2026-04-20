@@ -539,7 +539,6 @@
     padding-top: 12px;
   }
 
-  /* TELL ME MORE */
   .corr-footer {
     margin-top: 10px;
     display: flex;
@@ -1063,38 +1062,7 @@ function launchConfetti() {
   setTimeout(() => { wrap.innerHTML = ''; }, 2500);
 }
 
-async function tellMeMore(btn, original, corrected, explanation, category) {
-  const deepEl = btn.parentElement.nextElementSibling;
-  if (deepEl.classList.contains('visible')) {
-    deepEl.classList.remove('visible');
-    btn.querySelector('.tell-label').textContent = 'Tell me more';
-    return;
-  }
-  if (deepEl.textContent.trim()) {
-    deepEl.classList.add('visible');
-    btn.querySelector('.tell-label').textContent = 'Show less';
-    return;
-  }
-  btn.classList.add('loading');
-  try {
-    const response = await fetch('/api/explain', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ original, corrected, explanation, category })
-    });
-    const data = await response.json();
-    if (data.text) {
-      deepEl.textContent = data.text;
-      deepEl.classList.add('visible');
-      btn.querySelector('.tell-label').textContent = 'Show less';
-    }
-  } catch(err) {
-    deepEl.textContent = 'Could not load explanation. Please try again.';
-    deepEl.classList.add('visible');
-  }
-  btn.classList.remove('loading');
-}
-
+// FIX: usa dataset invece di parametri onclick per evitare problemi con apostrofi
 function renderResults(corrections, modeName) {
   document.getElementById('results-mode-tag').textContent = modeName;
   const score = calcScore(corrections);
@@ -1111,32 +1079,75 @@ function renderResults(corrections, modeName) {
     const catClass = catClasses[c.category]||'cat-improvement';
     const catLabel = c.category.charAt(0).toUpperCase()+c.category.slice(1);
     const firstClass = i === 0 ? ' first-card' : '';
-    const orig = escHtml(c.original);
-    const corr = escHtml(c.corrected);
-    const expl = escHtml(c.explanation);
-    const cat = escHtml(c.category);
-    list.innerHTML += `<div class="correction-card${firstClass}">
-      <div class="corr-top"><span class="corr-num">#${i+1}</span><span class="corr-cat ${catClass}">${catLabel}</span></div>
+    const card = document.createElement('div');
+    card.className = 'correction-card' + firstClass;
+    card.innerHTML = `
+      <div class="corr-top"><span class="corr-num">#${i+1}</span><span class="corr-cat ${catClass}">${escHtml(catLabel)}</span></div>
       <div class="corr-phrases">
-        <div class="phrase-box phrase-original">${orig}</div>
+        <div class="phrase-box phrase-original">${escHtml(c.original)}</div>
         <div class="phrase-arrow">→</div>
-        <div class="phrase-box phrase-corrected">${corr}</div>
+        <div class="phrase-box phrase-corrected">${escHtml(c.corrected)}</div>
       </div>
-      <div class="corr-explanation">${expl}</div>
+      <div class="corr-explanation">${escHtml(c.explanation)}</div>
       <div class="corr-footer">
-        <button class="btn-tell-more" onclick="tellMeMore(this, '${orig}', '${corr}', '${expl}', '${cat}')">
+        <button class="btn-tell-more">
           <div class="tell-spinner"></div>
           <span class="tell-label">Tell me more</span>
         </button>
       </div>
       <div class="corr-deep"></div>
-    </div>`;
+    `;
+    // Salva i dati nel dataset del bottone — nessun problema con apostrofi
+    const btn = card.querySelector('.btn-tell-more');
+    btn.dataset.original = c.original;
+    btn.dataset.corrected = c.corrected;
+    btn.dataset.explanation = c.explanation;
+    btn.dataset.category = c.category;
+    btn.addEventListener('click', () => tellMeMore(btn));
+    list.appendChild(card);
   });
   document.getElementById('results-section').classList.add('visible');
 }
 
+async function tellMeMore(btn) {
+  const deepEl = btn.closest('.correction-card').querySelector('.corr-deep');
+  if (deepEl.classList.contains('visible')) {
+    deepEl.classList.remove('visible');
+    btn.querySelector('.tell-label').textContent = 'Tell me more';
+    return;
+  }
+  if (deepEl.textContent.trim()) {
+    deepEl.classList.add('visible');
+    btn.querySelector('.tell-label').textContent = 'Show less';
+    return;
+  }
+  btn.classList.add('loading');
+  try {
+    const response = await fetch('/api/explain', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        original: btn.dataset.original,
+        corrected: btn.dataset.corrected,
+        explanation: btn.dataset.explanation,
+        category: btn.dataset.category
+      })
+    });
+    const data = await response.json();
+    if (data.text) {
+      deepEl.textContent = data.text;
+      deepEl.classList.add('visible');
+      btn.querySelector('.tell-label').textContent = 'Show less';
+    }
+  } catch(err) {
+    deepEl.textContent = 'Could not load explanation. Please try again.';
+    deepEl.classList.add('visible');
+  }
+  btn.classList.remove('loading');
+}
+
 function showError(msg) { const el=document.getElementById('error-box'); el.textContent=msg; el.classList.add('visible'); }
-function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
 function newSession() {
   elapsed=0; audioChunks=[];
