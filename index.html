@@ -32,7 +32,6 @@
     --shadow-md: 0 4px 6px rgba(0,0,0,0.05), 0 2px 4px rgba(0,0,0,0.04);
   }
 
-  /* 1. SFONDO CON GRADIENT MESH SOTTILE */
   body {
     font-family: 'Plus Jakarta Sans', sans-serif;
     font-size: 14px;
@@ -52,7 +51,6 @@
     padding: 0 20px 80px;
   }
 
-  /* HEADER */
   .header {
     padding: 24px 0 20px;
     margin-bottom: 28px;
@@ -62,7 +60,6 @@
     border-bottom: 1px solid var(--border);
   }
 
-  /* 2. LOGO CON GRADIENTE */
   .logo {
     font-size: 20px;
     font-weight: 700;
@@ -99,7 +96,6 @@
     margin-bottom: 10px;
   }
 
-  /* MODES */
   .modes {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
@@ -126,7 +122,6 @@
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(108,71,255,0.15);
   }
-  /* 3. MODE CARD ATTIVA CON GRADIENTE */
   .mode-btn.active {
     background: linear-gradient(135deg, #6c47ff 0%, #4f35cc 100%);
     border-color: transparent;
@@ -161,7 +156,6 @@
   .custom-input-wrap input:focus { border-color: var(--accent); }
   .custom-input-wrap input::placeholder { color: var(--text-faint); }
 
-  /* RECORDER */
   .recorder-card {
     background: var(--surface);
     border: 1.5px solid var(--border);
@@ -175,7 +169,6 @@
     position: relative;
     overflow: hidden;
   }
-  /* Sottile decorazione in cima alla recorder card */
   .recorder-card::before {
     content: '';
     position: absolute;
@@ -218,9 +211,40 @@
     background: linear-gradient(to top, #6c47ff, #a78bfa);
   }
 
-  .rec-controls { display: flex; gap: 12px; align-items: center; }
+  .rec-controls { display: flex; gap: 16px; align-items: center; }
 
-  /* 4. BOTTONE RECORD CON PULSE ANIMATO */
+  /* PROGRESS RING INTORNO AL BOTTONE RECORD */
+  .record-ring-wrap {
+    position: relative;
+    width: 72px;
+    height: 72px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .record-ring {
+    position: absolute;
+    top: 0; left: 0;
+    width: 72px;
+    height: 72px;
+    transform: rotate(-90deg);
+    pointer-events: none;
+  }
+  .record-ring-bg {
+    fill: none;
+    stroke: var(--border);
+    stroke-width: 2.5;
+  }
+  .record-ring-fill {
+    fill: none;
+    stroke: url(#ringGradient);
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-dasharray: 195;
+    stroke-dashoffset: 195;
+    transition: stroke-dashoffset 1s linear;
+  }
+
   .btn-record {
     width: 56px;
     height: 56px;
@@ -235,6 +259,7 @@
     transition: all 0.2s;
     box-shadow: 0 4px 14px rgba(108,71,255,0.35);
     position: relative;
+    z-index: 1;
   }
   .btn-record:hover {
     transform: scale(1.07);
@@ -339,7 +364,6 @@
   .manual-textarea::placeholder { color: var(--text-faint); }
   .manual-textarea.visible { display: block; }
 
-  /* TRANSCRIPT */
   .transcript-section { display: none; }
   .transcript-section.visible { display: block; }
   .transcript-box {
@@ -357,14 +381,12 @@
     box-shadow: var(--shadow);
   }
 
-  /* 5. BOTTONE ANALYSE CON GRADIENTE E SHIMMER */
   .btn-analyse {
     width: 100%;
     padding: 15px;
     border-radius: var(--r);
     border: none;
     background: linear-gradient(135deg, #6c47ff 0%, #4f35cc 100%);
-    background-size: 200% 100%;
     color: white;
     font-family: 'Plus Jakarta Sans', sans-serif;
     font-size: 14px;
@@ -391,7 +413,6 @@
   .btn-analyse:hover::after { left: 150%; }
   .btn-analyse:active { transform: scale(0.99) translateY(0); }
 
-  /* LOADING */
   .loading-state {
     display: none;
     flex-direction: column;
@@ -412,9 +433,36 @@
   }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* RESULTS */
   .results-section { display: none; }
   .results-section.visible { display: block; }
+
+  /* SCORE BANNER */
+  .score-banner {
+    display: none;
+    background: linear-gradient(135deg, #6c47ff 0%, #4f35cc 100%);
+    border-radius: var(--r-lg);
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    color: white;
+    align-items: center;
+    justify-content: space-between;
+    animation: fadeUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    box-shadow: 0 8px 24px rgba(108,71,255,0.3);
+  }
+  .score-banner.visible { display: flex; }
+  .score-left { display: flex; flex-direction: column; gap: 2px; }
+  .score-label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.75; }
+  .score-value {
+    font-size: 36px;
+    font-weight: 700;
+    letter-spacing: -1px;
+    line-height: 1;
+  }
+  .score-value span { font-size: 16px; font-weight: 500; opacity: 0.75; }
+  .score-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+  .score-bar-wrap { width: 120px; height: 6px; background: rgba(255,255,255,0.2); border-radius: 4px; overflow: hidden; }
+  .score-bar-fill { height: 100%; background: white; border-radius: 4px; width: 0%; transition: width 1.2s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  .score-msg { font-size: 12px; font-weight: 500; opacity: 0.85; }
 
   .results-header {
     display: flex;
@@ -438,7 +486,6 @@
     border-radius: 20px;
   }
 
-  /* 6. CORRECTION CARD CON LIFT HOVER */
   .correction-card {
     border: 1.5px solid var(--border);
     border-radius: var(--r-lg);
@@ -462,6 +509,18 @@
     border-color: var(--accent);
     box-shadow: 0 8px 24px rgba(108,71,255,0.12);
     transform: translateY(-3px);
+  }
+
+  /* CELEBRATION GLOW sulla prima card */
+  .correction-card.first-card {
+    border-color: rgba(108,71,255,0.3);
+    box-shadow: 0 0 0 3px rgba(108,71,255,0.08), var(--shadow);
+    animation: fadeUp 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both, cardGlow 2s ease 0.5s;
+  }
+  @keyframes cardGlow {
+    0% { box-shadow: 0 0 0 3px rgba(108,71,255,0.08), var(--shadow); }
+    30% { box-shadow: 0 0 0 8px rgba(108,71,255,0.12), 0 8px 32px rgba(108,71,255,0.2); }
+    100% { box-shadow: 0 0 0 3px rgba(108,71,255,0.08), var(--shadow); }
   }
 
   .corr-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
@@ -541,7 +600,29 @@
   }
   .error-box.visible { display: block; }
 
-  /* PAYWALL */
+  /* CONFETTI */
+  .confetti-wrap {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 0;
+    overflow: visible;
+    pointer-events: none;
+    z-index: 200;
+  }
+  .confetti-piece {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+    opacity: 0;
+    animation: confettiFall 1.8s ease forwards;
+  }
+  @keyframes confettiFall {
+    0% { opacity: 1; transform: translateY(0) rotate(0deg) scale(1); }
+    80% { opacity: 1; }
+    100% { opacity: 0; transform: translateY(400px) rotate(720deg) scale(0.5); }
+  }
+
   .paywall-overlay {
     display: none;
     position: fixed;
@@ -615,6 +696,10 @@
 </style>
 </head>
 <body>
+
+<!-- CONFETTI CONTAINER -->
+<div class="confetti-wrap" id="confetti-wrap"></div>
+
 <div class="app">
 
   <div class="header">
@@ -670,9 +755,22 @@
         <div class="wave-bar" style="height:11px" id="wb11"></div>
       </div>
       <div class="rec-controls">
-        <button class="btn-record" id="btn-record" onclick="toggleRecord()">
-          <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="6"/></svg>
-        </button>
+        <!-- PROGRESS RING -->
+        <div class="record-ring-wrap">
+          <svg class="record-ring" viewBox="0 0 72 72">
+            <defs>
+              <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#6c47ff"/>
+                <stop offset="100%" stop-color="#ef4444"/>
+              </linearGradient>
+            </defs>
+            <circle class="record-ring-bg" cx="36" cy="36" r="31"/>
+            <circle class="record-ring-fill" id="ring-fill" cx="36" cy="36" r="31"/>
+          </svg>
+          <button class="btn-record" id="btn-record" onclick="toggleRecord()">
+            <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="6"/></svg>
+          </button>
+        </div>
         <button class="btn-stop" id="btn-stop" onclick="stopRecording()">Stop & transcribe</button>
       </div>
       <div class="transcribing-badge" id="transcribing-badge">
@@ -707,6 +805,19 @@
   </div>
 
   <div class="results-section" id="results-section">
+    <!-- SCORE BANNER -->
+    <div class="score-banner" id="score-banner">
+      <div class="score-left">
+        <div class="score-label">Speaking score</div>
+        <div class="score-value" id="score-value">0<span>/100</span></div>
+      </div>
+      <div class="score-right">
+        <div class="score-bar-wrap">
+          <div class="score-bar-fill" id="score-bar-fill"></div>
+        </div>
+        <div class="score-msg" id="score-msg">Keep going!</div>
+      </div>
+    </div>
     <div class="results-header">
       <div class="results-title">Your 5 corrections</div>
       <div class="results-mode-tag" id="results-mode-tag">Top 5</div>
@@ -781,6 +892,13 @@ function getSupportedMimeType() {
   return '';
 }
 
+// PROGRESS RING update
+function updateRing(pct) {
+  const circumference = 195;
+  const offset = circumference - (pct / 100) * circumference;
+  document.getElementById('ring-fill').style.strokeDashoffset = offset;
+}
+
 async function startRecording() {
   audioChunks = [];
   document.getElementById('transcript-box').textContent = '';
@@ -788,11 +906,12 @@ async function startRecording() {
   document.getElementById('step-analyse').style.display = 'none';
   document.getElementById('results-section').classList.remove('visible');
   document.getElementById('error-box').classList.remove('visible');
+  updateRing(0);
+
   let stream;
   try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); }
   catch(e) { showError('Microphone access denied. Please allow microphone access and try again.'); return; }
 
-  /* 7. WAVEFORM REALE CON WEB AUDIO API */
   try {
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     const source = audioCtx.createMediaStreamSource(stream);
@@ -836,6 +955,7 @@ async function startRecording() {
     fill.className = 'limit-bar-fill'+(pct>90?' danger':pct>70?' warn':'');
     const rem = MAX_SECONDS-elapsed;
     document.getElementById('limit-label').textContent = Math.floor(rem/60)+':'+String(rem%60).padStart(2,'0')+' left';
+    updateRing(pct);
     if (elapsed>=MAX_SECONDS) stopRecording();
   }, 1000);
 }
@@ -848,6 +968,7 @@ async function stopRecording() {
   document.getElementById('btn-stop').classList.remove('visible');
   document.getElementById('waveform').classList.remove('active');
   document.getElementById('timer').classList.remove('active');
+  updateRing(0);
   const heights = [5,10,4,14,8,18,6,12,9,16,5,11];
   for (let i=0;i<12;i++) document.getElementById('wb'+i).style.height=heights[i]+'px';
   document.getElementById('transcribing-badge').classList.add('visible');
@@ -912,14 +1033,61 @@ async function analyse() {
 function closePaywall() { document.getElementById('paywall-overlay').classList.remove('visible'); }
 function handleUpgrade() { alert('Stripe integration coming soon!'); }
 
+// SCORE calculation based on number/severity of corrections
+function calcScore(corrections) {
+  const base = 100;
+  const deduction = corrections.length * 8;
+  const categoryBonus = corrections.filter(c => c.category === 'improvement').length * 2;
+  return Math.max(45, Math.min(95, base - deduction + categoryBonus + Math.floor(Math.random() * 8)));
+}
+
+function getScoreMsg(score) {
+  if (score >= 85) return '🌟 Excellent!';
+  if (score >= 72) return '👍 Good job!';
+  if (score >= 60) return '💪 Keep going!';
+  return '📈 Room to grow!';
+}
+
+// CONFETTI burst
+function launchConfetti() {
+  const wrap = document.getElementById('confetti-wrap');
+  wrap.innerHTML = '';
+  const colors = ['#6c47ff','#a78bfa','#10b981','#f59e0b','#ef4444','#3b82f6'];
+  for (let i = 0; i < 40; i++) {
+    const el = document.createElement('div');
+    el.className = 'confetti-piece';
+    el.style.left = (10 + Math.random() * 80) + '%';
+    el.style.top = '0px';
+    el.style.background = colors[Math.floor(Math.random() * colors.length)];
+    el.style.animationDelay = (Math.random() * 0.6) + 's';
+    el.style.animationDuration = (1.2 + Math.random() * 0.8) + 's';
+    wrap.appendChild(el);
+  }
+  setTimeout(() => { wrap.innerHTML = ''; }, 2500);
+}
+
 function renderResults(corrections, modeName) {
   document.getElementById('results-mode-tag').textContent = modeName;
+
+  // Score
+  const score = calcScore(corrections);
+  document.getElementById('score-banner').classList.add('visible');
+  document.getElementById('score-msg').textContent = getScoreMsg(score);
+  setTimeout(() => {
+    document.getElementById('score-value').innerHTML = score + '<span>/100</span>';
+    document.getElementById('score-bar-fill').style.width = score + '%';
+  }, 200);
+
+  // Confetti
+  launchConfetti();
+
   const list = document.getElementById('corrections-list');
   list.innerHTML = '';
   corrections.slice(0,5).forEach((c,i) => {
     const catClass = catClasses[c.category]||'cat-improvement';
     const catLabel = c.category.charAt(0).toUpperCase()+c.category.slice(1);
-    list.innerHTML += `<div class="correction-card">
+    const firstClass = i === 0 ? ' first-card' : '';
+    list.innerHTML += `<div class="correction-card${firstClass}">
       <div class="corr-top"><span class="corr-num">#${i+1}</span><span class="corr-cat ${catClass}">${catLabel}</span></div>
       <div class="corr-phrases">
         <div class="phrase-box phrase-original">${escHtml(c.original)}</div>
@@ -945,6 +1113,7 @@ function newSession() {
   document.getElementById('transcript-section').classList.remove('visible');
   document.getElementById('step-analyse').style.display='none';
   document.getElementById('results-section').classList.remove('visible');
+  document.getElementById('score-banner').classList.remove('visible');
   document.getElementById('error-box').classList.remove('visible');
   document.getElementById('loading-state').classList.remove('visible');
   document.getElementById('transcribing-badge').classList.remove('visible');
@@ -952,6 +1121,7 @@ function newSession() {
   document.getElementById('manual-textarea').classList.remove('visible');
   document.getElementById('custom-focus-input').value='';
   manualVisible=false;
+  updateRing(0);
   document.getElementById('rec-hint').textContent='Open Tandem, Skype or Discord, speak with your headphones, and record only your voice.';
   const heights=[5,10,4,14,8,18,6,12,9,16,5,11];
   for(let i=0;i<12;i++) document.getElementById('wb'+i).style.height=heights[i]+'px';
