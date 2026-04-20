@@ -1009,7 +1009,7 @@ async function analyse() {
   document.getElementById('transcript-section').classList.remove('visible');
   document.getElementById('error-box').classList.remove('visible');
   document.getElementById('loading-state').classList.add('visible');
-  const modeNames = {top5:'Top 5',grammar:'Grammar',natural:'Natural',simplicity:'Simplicity',custom:'Custom'};
+  const modeNames = {top5:'Top 5',grammar:'Grammar',natural:'Fluency',simplicity:'Clarity',custom:'Custom'};
   const customFocus = document.getElementById('custom-focus-input').value.trim();
   const loadingMsgs = ['Analysing your speaking…','Selecting the best corrections…','Almost done…'];
   let mi = 0;
