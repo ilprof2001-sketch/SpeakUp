@@ -1031,7 +1031,7 @@ async function analyse() {
 }
 
 function closePaywall() { document.getElementById('paywall-overlay').classList.remove('visible'); }
-function handleUpgrade() { alert('Stripe integration coming soon!'); }
+function handleUpgrade() { window.open('https://buy.stripe.com/5kQbJ18OZ1BAa5ic8K5AQ00', '_blank'); }
 
 // SCORE calculation based on number/severity of corrections
 function calcScore(corrections) {
