@@ -213,7 +213,6 @@
 
   .rec-controls { display: flex; gap: 16px; align-items: center; }
 
-  /* PROGRESS RING INTORNO AL BOTTONE RECORD */
   .record-ring-wrap {
     position: relative;
     width: 72px;
@@ -436,7 +435,6 @@
   .results-section { display: none; }
   .results-section.visible { display: block; }
 
-  /* SCORE BANNER */
   .score-banner {
     display: none;
     background: linear-gradient(135deg, #6c47ff 0%, #4f35cc 100%);
@@ -452,12 +450,7 @@
   .score-banner.visible { display: flex; }
   .score-left { display: flex; flex-direction: column; gap: 2px; }
   .score-label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.75; }
-  .score-value {
-    font-size: 36px;
-    font-weight: 700;
-    letter-spacing: -1px;
-    line-height: 1;
-  }
+  .score-value { font-size: 36px; font-weight: 700; letter-spacing: -1px; line-height: 1; }
   .score-value span { font-size: 16px; font-weight: 500; opacity: 0.75; }
   .score-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
   .score-bar-wrap { width: 120px; height: 6px; background: rgba(255,255,255,0.2); border-radius: 4px; overflow: hidden; }
@@ -470,12 +463,7 @@
     justify-content: space-between;
     margin-bottom: 16px;
   }
-  .results-title {
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--text);
-    letter-spacing: -0.3px;
-  }
+  .results-title { font-size: 18px; font-weight: 700; color: var(--text); letter-spacing: -0.3px; }
   .results-mode-tag {
     font-size: 11px;
     font-weight: 600;
@@ -511,7 +499,6 @@
     transform: translateY(-3px);
   }
 
-  /* CELEBRATION GLOW sulla prima card */
   .correction-card.first-card {
     border-color: rgba(108,71,255,0.3);
     box-shadow: 0 0 0 3px rgba(108,71,255,0.08), var(--shadow);
@@ -525,12 +512,7 @@
 
   .corr-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
   .corr-num { font-size: 11px; font-weight: 600; color: var(--text-faint); letter-spacing: 0.06em; }
-  .corr-cat {
-    font-size: 11px;
-    font-weight: 600;
-    padding: 3px 10px;
-    border-radius: 20px;
-  }
+  .corr-cat { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
   .cat-grammar { background: #eff6ff; color: #1d4ed8; }
   .cat-natural { background: #fffbeb; color: #92400e; }
   .cat-simplicity { background: #f5f3ff; color: #6d28d9; }
@@ -544,24 +526,11 @@
     align-items: start;
     margin-bottom: 14px;
   }
-  .phrase-box {
-    border-radius: var(--r);
-    padding: 10px 12px;
-    font-size: 13px;
-    line-height: 1.5;
-    font-weight: 500;
-  }
-  .phrase-original {
-    background: var(--red-light);
-    color: #b91c1c;
-    text-decoration: line-through;
-    text-decoration-color: rgba(185,28,28,0.4);
-  }
+  .phrase-box { border-radius: var(--r); padding: 10px 12px; font-size: 13px; line-height: 1.5; font-weight: 500; }
+  .phrase-original { background: var(--red-light); color: #b91c1c; text-decoration: line-through; text-decoration-color: rgba(185,28,28,0.4); }
   .phrase-arrow { color: var(--text-faint); font-size: 16px; text-align: center; padding-top: 9px; }
-  .phrase-corrected {
-    background: var(--green-light);
-    color: #065f46;
-  }
+  .phrase-corrected { background: var(--green-light); color: #065f46; }
+
   .corr-explanation {
     font-size: 13px;
     color: var(--text-muted);
@@ -569,6 +538,52 @@
     border-top: 1px solid var(--border);
     padding-top: 12px;
   }
+
+  /* TELL ME MORE */
+  .corr-footer {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .btn-tell-more {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--accent);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    transition: opacity 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .btn-tell-more:hover { opacity: 0.7; }
+  .btn-tell-more .tell-spinner {
+    width: 12px; height: 12px;
+    border: 1.5px solid var(--accent-light);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: none;
+  }
+  .btn-tell-more.loading .tell-spinner { display: block; }
+  .btn-tell-more.loading .tell-label { display: none; }
+
+  .corr-deep {
+    margin-top: 10px;
+    padding: 12px 14px;
+    background: var(--accent-light);
+    border-radius: var(--r);
+    font-size: 13px;
+    color: var(--accent-text);
+    line-height: 1.7;
+    display: none;
+    animation: fadeUp 0.25s ease both;
+  }
+  .corr-deep.visible { display: block; }
 
   .btn-new-session {
     width: 100%;
@@ -600,7 +615,6 @@
   }
   .error-box.visible { display: block; }
 
-  /* CONFETTI */
   .confetti-wrap {
     position: fixed;
     top: 0; left: 0; right: 0;
@@ -611,8 +625,7 @@
   }
   .confetti-piece {
     position: absolute;
-    width: 8px;
-    height: 8px;
+    width: 8px; height: 8px;
     border-radius: 2px;
     opacity: 0;
     animation: confettiFall 1.8s ease forwards;
@@ -697,7 +710,6 @@
 </head>
 <body>
 
-<!-- CONFETTI CONTAINER -->
 <div class="confetti-wrap" id="confetti-wrap"></div>
 
 <div class="app">
@@ -711,24 +723,19 @@
     <div class="label">Choose your focus</div>
     <div class="modes">
       <button class="mode-btn active" data-mode="top5" onclick="selectMode(this)">
-        <span class="mode-icon">✦</span>
-        <span class="mode-name">Top 5</span>
+        <span class="mode-icon">✦</span><span class="mode-name">Top 5</span>
       </button>
       <button class="mode-btn" data-mode="grammar" onclick="selectMode(this)">
-        <span class="mode-icon">◎</span>
-        <span class="mode-name">Grammar</span>
+        <span class="mode-icon">◎</span><span class="mode-name">Grammar</span>
       </button>
       <button class="mode-btn" data-mode="natural" onclick="selectMode(this)">
-        <span class="mode-icon">◈</span>
-        <span class="mode-name">Fluency</span>
+        <span class="mode-icon">◈</span><span class="mode-name">Fluency</span>
       </button>
       <button class="mode-btn" data-mode="simplicity" onclick="selectMode(this)">
-        <span class="mode-icon">◇</span>
-        <span class="mode-name">Clarity</span>
+        <span class="mode-icon">◇</span><span class="mode-name">Clarity</span>
       </button>
       <button class="mode-btn" data-mode="custom" onclick="selectMode(this)">
-        <span class="mode-icon">◉</span>
-        <span class="mode-name">Custom</span>
+        <span class="mode-icon">◉</span><span class="mode-name">Custom</span>
       </button>
     </div>
     <div class="custom-input-wrap" id="custom-input-wrap">
@@ -755,7 +762,6 @@
         <div class="wave-bar" style="height:11px" id="wb11"></div>
       </div>
       <div class="rec-controls">
-        <!-- PROGRESS RING -->
         <div class="record-ring-wrap">
           <svg class="record-ring" viewBox="0 0 72 72">
             <defs>
@@ -805,16 +811,13 @@
   </div>
 
   <div class="results-section" id="results-section">
-    <!-- SCORE BANNER -->
     <div class="score-banner" id="score-banner">
       <div class="score-left">
         <div class="score-label">Speaking score</div>
         <div class="score-value" id="score-value">0<span>/100</span></div>
       </div>
       <div class="score-right">
-        <div class="score-bar-wrap">
-          <div class="score-bar-fill" id="score-bar-fill"></div>
-        </div>
+        <div class="score-bar-wrap"><div class="score-bar-fill" id="score-bar-fill"></div></div>
         <div class="score-msg" id="score-msg">Keep going!</div>
       </div>
     </div>
@@ -892,7 +895,6 @@ function getSupportedMimeType() {
   return '';
 }
 
-// PROGRESS RING update
 function updateRing(pct) {
   const circumference = 195;
   const offset = circumference - (pct / 100) * circumference;
@@ -907,11 +909,9 @@ async function startRecording() {
   document.getElementById('results-section').classList.remove('visible');
   document.getElementById('error-box').classList.remove('visible');
   updateRing(0);
-
   let stream;
   try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); }
   catch(e) { showError('Microphone access denied. Please allow microphone access and try again.'); return; }
-
   try {
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     const source = audioCtx.createMediaStreamSource(stream);
@@ -934,7 +934,6 @@ async function startRecording() {
       for (let i=0;i<12;i++) document.getElementById('wb'+i).style.height=(Math.floor(Math.random()*18)+3)+'px';
     }, 100);
   }
-
   const mimeType = getSupportedMimeType();
   mediaRecorder = new MediaRecorder(stream, mimeType ? { mimeType } : {});
   mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
@@ -1033,7 +1032,6 @@ async function analyse() {
 function closePaywall() { document.getElementById('paywall-overlay').classList.remove('visible'); }
 function handleUpgrade() { window.open('https://buy.stripe.com/5kQbJ18OZ1BAa5ic8K5AQ00', '_blank'); }
 
-// SCORE calculation based on number/severity of corrections
 function calcScore(corrections) {
   const base = 100;
   const deduction = corrections.length * 8;
@@ -1048,7 +1046,6 @@ function getScoreMsg(score) {
   return '📈 Room to grow!';
 }
 
-// CONFETTI burst
 function launchConfetti() {
   const wrap = document.getElementById('confetti-wrap');
   wrap.innerHTML = '';
@@ -1066,10 +1063,40 @@ function launchConfetti() {
   setTimeout(() => { wrap.innerHTML = ''; }, 2500);
 }
 
+async function tellMeMore(btn, original, corrected, explanation, category) {
+  const deepEl = btn.parentElement.nextElementSibling;
+  if (deepEl.classList.contains('visible')) {
+    deepEl.classList.remove('visible');
+    btn.querySelector('.tell-label').textContent = 'Tell me more';
+    return;
+  }
+  if (deepEl.textContent.trim()) {
+    deepEl.classList.add('visible');
+    btn.querySelector('.tell-label').textContent = 'Show less';
+    return;
+  }
+  btn.classList.add('loading');
+  try {
+    const response = await fetch('/api/explain', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ original, corrected, explanation, category })
+    });
+    const data = await response.json();
+    if (data.text) {
+      deepEl.textContent = data.text;
+      deepEl.classList.add('visible');
+      btn.querySelector('.tell-label').textContent = 'Show less';
+    }
+  } catch(err) {
+    deepEl.textContent = 'Could not load explanation. Please try again.';
+    deepEl.classList.add('visible');
+  }
+  btn.classList.remove('loading');
+}
+
 function renderResults(corrections, modeName) {
   document.getElementById('results-mode-tag').textContent = modeName;
-
-  // Score
   const score = calcScore(corrections);
   document.getElementById('score-banner').classList.add('visible');
   document.getElementById('score-msg').textContent = getScoreMsg(score);
@@ -1077,31 +1104,39 @@ function renderResults(corrections, modeName) {
     document.getElementById('score-value').innerHTML = score + '<span>/100</span>';
     document.getElementById('score-bar-fill').style.width = score + '%';
   }, 200);
-
-  // Confetti
   launchConfetti();
-
   const list = document.getElementById('corrections-list');
   list.innerHTML = '';
   corrections.slice(0,5).forEach((c,i) => {
     const catClass = catClasses[c.category]||'cat-improvement';
     const catLabel = c.category.charAt(0).toUpperCase()+c.category.slice(1);
     const firstClass = i === 0 ? ' first-card' : '';
+    const orig = escHtml(c.original);
+    const corr = escHtml(c.corrected);
+    const expl = escHtml(c.explanation);
+    const cat = escHtml(c.category);
     list.innerHTML += `<div class="correction-card${firstClass}">
       <div class="corr-top"><span class="corr-num">#${i+1}</span><span class="corr-cat ${catClass}">${catLabel}</span></div>
       <div class="corr-phrases">
-        <div class="phrase-box phrase-original">${escHtml(c.original)}</div>
+        <div class="phrase-box phrase-original">${orig}</div>
         <div class="phrase-arrow">→</div>
-        <div class="phrase-box phrase-corrected">${escHtml(c.corrected)}</div>
+        <div class="phrase-box phrase-corrected">${corr}</div>
       </div>
-      <div class="corr-explanation">${escHtml(c.explanation)}</div>
+      <div class="corr-explanation">${expl}</div>
+      <div class="corr-footer">
+        <button class="btn-tell-more" onclick="tellMeMore(this, '${orig}', '${corr}', '${expl}', '${cat}')">
+          <div class="tell-spinner"></div>
+          <span class="tell-label">Tell me more</span>
+        </button>
+      </div>
+      <div class="corr-deep"></div>
     </div>`;
   });
   document.getElementById('results-section').classList.add('visible');
 }
 
 function showError(msg) { const el=document.getElementById('error-box'); el.textContent=msg; el.classList.add('visible'); }
-function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 
 function newSession() {
   elapsed=0; audioChunks=[];
