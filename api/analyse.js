@@ -19,18 +19,31 @@ export default async function handler(req, res) {
     }
 
     let modeInstruction = '';
-    if (mode === 'top5') modeInstruction = 'Select the 5 most impactful corrections across all dimensions (grammar, naturalness, fluency, word choice).';
-    else if (mode === 'grammar') modeInstruction = 'Focus only on grammar errors (tense, agreement, articles, prepositions, word order).';
-    else if (mode === 'natural') modeInstruction = 'Focus on phrases that sound too literal or translated from Italian — rewrite them to sound like a native English speaker.';
-    else if (mode === 'simplicity') modeInstruction = 'Focus on overly complex phrases that could be expressed more simply and fluently.';
-    else if (mode === 'custom') modeInstruction = 'Focus specifically on: ' + (customFocus || 'general improvement') + '.';
-    else if (mode === 'realtalk') modeInstruction = `You are analyzing casual, informal spoken English. Apply these rules:
-1. NEVER correct slang or informal forms that native speakers use in casual conversation (ain't, gonna, wanna, dunno, I don't know nothing, etc.). Instead, acknowledge them with a light ironic tone: explain they are technically incorrect but totally fine in informal conversation — and definitely not for a university exam.
-2. If the speaker uses overly formal or textbook English, suggest the more natural informal version a native speaker would actually use.
-3. Only correct genuine errors that even a native speaker would never say in any context, formal or informal.
-4. The tone of explanations must be friendly and slightly ironic — like advice from a native speaker friend, not a grammar teacher.
-5. Use the category "realtalk" for casual/slang observations, and "grammar" only for real errors.`;
-    else modeInstruction = 'Select the 5 most impactful corrections across all dimensions.';
+
+    if (mode === 'top5') {
+      modeInstruction = `Select the 5 most impactful corrections across all dimensions (grammar, naturalness, fluency, word choice). Prioritize errors that make the speaker sound unnatural or unclear to a native English speaker.`;
+    }
+    else if (mode === 'realtalk') {
+      modeInstruction = `You are analyzing casual, informal spoken English. Apply these rules:
+1. NEVER correct slang or informal forms that native speakers use in casual conversation (ain't, gonna, wanna, dunno, etc.). Instead, acknowledge them with a light ironic tone: explain they are technically informal but totally fine in casual speech.
+2. If the speaker uses overly formal or textbook English, suggest the more natural informal version a native speaker would actually use in conversation.
+3. Only correct genuine errors that even a native speaker would never say in any context — these always take priority.
+4. Actively suggest more natural, colloquial alternatives even when the speaker's version is technically correct.
+5. Tone of explanations: friendly, slightly ironic, like advice from a native speaker friend — not a grammar teacher.
+6. Use category "realtalk" for casual/slang observations, "grammar" only for real errors that must be fixed.`;
+    }
+    else if (mode === 'custom') {
+      const focus = customFocus || 'general improvement';
+      modeInstruction = `The user has specified this focus: "${focus}".
+Adapt your analysis accordingly:
+- If the focus is an exam (C1, IELTS, TOEFL, Cambridge, etc.): act as a strict examiner. Correct not just errors but also flat or generic phrasing. Suggest more sophisticated vocabulary and structures. Flag correct but weak sentences that would score lower in an exam.
+- If the focus is a grammar topic (prepositions, articles, tenses, etc.): concentrate exclusively on that topic. Ignore other types of errors unless they are very serious.
+- If the focus is a context (job interview, business calls, academic writing): adapt tone and vocabulary suggestions accordingly.
+Always correct genuine grammar errors regardless of the focus.`;
+    }
+    else {
+      modeInstruction = `Select the 5 most impactful corrections across all dimensions.`;
+    }
 
     const prompt = `You are an expert English speaking coach. A non-native English speaker (likely Italian) has spoken the following transcript during a real conversation.
 Your task: identify exactly 5 high-value corrections. ${modeInstruction}
