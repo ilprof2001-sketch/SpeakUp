@@ -827,12 +827,9 @@
 </div>
 
 <div class="paywall-overlay" id="login-overlay">
-  <div class="paywall-card">
-    <div class="paywall-icon">👋</div>
-    <div class="paywall-title">Sign in to continue</div>
-    <div class="paywall-subtitle">Create a free account to keep improving your English after every conversation.</div>
-    <div id="clerk-mount" style="margin: 20px 0;"></div>
-    <button class="paywall-dismiss" onclick="closeLogin()">Maybe later</button>
+  <div style="position: relative;">
+    <div id="clerk-mount"></div>
+    <button class="paywall-dismiss" onclick="closeLogin()" style="display: block; margin: 12px auto 0; text-align: center;">Maybe later</button>
   </div>
 </div>
 
