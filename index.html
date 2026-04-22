@@ -712,6 +712,13 @@
 <body>
 
 <div class="confetti-wrap" id="confetti-wrap"></div>
+<div id="session-banner" style="display:none; position:fixed; bottom:0; left:0; right:0; background:#1a1b2e; color:white; padding:12px 20px; display:flex; align-items:center; justify-content:space-between; z-index:50; font-size:13px;">
+  <span id="session-banner-text">You have 2 sessions left</span>
+  <div style="display:flex; gap:10px; align-items:center;">
+    <button onclick="showLoginModal()" style="background:#6c47ff; color:white; border:none; padding:8px 16px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; font-family:'Plus Jakarta Sans',sans-serif;">Sign in for more</button>
+    <button onclick="document.getElementById('session-banner').style.display='none'" style="background:none; border:none; color:rgba(255,255,255,0.5); cursor:pointer; font-size:18px;">×</button>
+  </div>
+</div>
 
 <div class="app">
 
@@ -851,7 +858,9 @@
 </div>
 
 <script>
-const MAX_SESSIONS_FREE = 3;
+const MAX_SESSIONS_GUEST = 3;
+const MAX_SESSIONS_LOGGED = 6;
+const CLERK_PUBLISHABLE_KEY = 'pk_test_c3VubnktcGFuZ29saW4tMzkuY2xlcmsuYWNjb3VudHMuZGV2JA';
 const MAX_SECONDS = 300;
 let selectedMode = 'top5';
 let isRecording = false;
@@ -865,12 +874,19 @@ const catClasses = { grammar:'cat-grammar', natural:'cat-natural', simplicity:'c
 
 function getSessions() { return parseInt(localStorage.getItem('aftercall_sessions') || '0'); }
 function incrementSessions() { localStorage.setItem('aftercall_sessions', getSessions() + 1); }
+function isLoggedIn() { return window.Clerk && window.Clerk.user; }
+function getMaxSessions() { return isLoggedIn() ? MAX_SESSIONS_LOGGED : MAX_SESSIONS_GUEST; }
+function isPremium() { return isLoggedIn() && window.Clerk.user.publicMetadata && window.Clerk.user.publicMetadata.premium; }
+
 function updateBadge() {
-  const remaining = Math.max(0, MAX_SESSIONS_FREE - getSessions());
+  const sessions = getSessions();
+  const max = getMaxSessions();
+  const remaining = Math.max(0, max - sessions);
   const badge = document.getElementById('session-badge');
+  if (isPremium()) { badge.textContent = 'Premium ✦'; badge.className = 'session-badge'; return; }
   if (remaining === 0) { badge.textContent = 'Upgrade to Premium'; badge.className = 'session-badge out'; }
   else if (remaining === 1) { badge.textContent = '1 session left'; badge.className = 'session-badge warn'; }
-  else { badge.textContent = remaining + ' free sessions left'; badge.className = 'session-badge'; }
+  else { badge.textContent = remaining + ' sessions left'; badge.className = 'session-badge'; }
 }
 
 function selectMode(el) {
@@ -1003,17 +1019,13 @@ async function stopRecording() {
 }
 
 async function analyse() {
-  if (getSessions() >= MAX_SESSIONS_FREE) {
-    const user = window.Clerk && window.Clerk.user;
-    if (!user) {
+  if (!isPremium() && getSessions() >= getMaxSessions()) {
+    if (!isLoggedIn()) {
       showLoginModal();
-      return;
-    }
-    const premium = user.publicMetadata && user.publicMetadata.premium;
-    if (!premium) {
+    } else {
       document.getElementById('paywall-overlay').classList.add('visible');
-      return;
     }
+    return;
   }
   const text = document.getElementById('transcript-box').textContent.trim() || document.getElementById('manual-textarea').value.trim();
   if (!text) { showError('No text to analyse. Record your voice or paste a transcript.'); return; }
@@ -1031,7 +1043,7 @@ async function analyse() {
     clearInterval(loadTick);
     const data = await response.json();
     if (data.error) throw new Error(data.error);
-    incrementSessions(); updateBadge();
+    incrementSessions(); updateBadge(); showSessionBanner();
     document.getElementById('loading-state').classList.remove('visible');
     renderResults(data.corrections, modeNames[selectedMode]);
   } catch(err) {
@@ -1043,6 +1055,16 @@ async function analyse() {
 }
 
 function closePaywall() { document.getElementById('paywall-overlay').classList.remove('visible'); }
+
+function showSessionBanner() {
+  if (isPremium()) return;
+  const remaining = Math.max(0, getMaxSessions() - getSessions());
+  if (remaining <= 0 || isLoggedIn()) return;
+  const banner = document.getElementById('session-banner');
+  const text = document.getElementById('session-banner-text');
+  text.textContent = remaining === 1 ? 'Last free session — sign in to get more' : remaining + ' free sessions left';
+  banner.style.display = 'flex';
+}
 function closeLogin() { document.getElementById('login-overlay').classList.remove('visible'); }
 
 function showLoginModal() {
