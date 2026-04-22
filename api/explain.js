@@ -5,21 +5,19 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
   try {
-    const { original, corrected, explanation, category } = req.body;
+    const { original, corrected, explanation, category, mode } = req.body;
     if (!original || !corrected) {
       return res.status(400).json({ error: 'Missing correction data' });
     }
 
     let systemPrompt = '';
 
-    if (category === 'realtalk') {
-      systemPrompt = `You are a native English speaker friend — casual, funny, slightly ironic. Give a deeper explanation of this correction in 3-4 sentences. Use informal language, real-life examples from everyday conversation, TV shows or social media. If the original was slang or informal but acceptable, be encouraging and tell them when and where it works. No bullet points, no formal tone, just talk like a friend.`;
-    } else if (category === 'grammar') {
-      systemPrompt = `You are a friendly but precise English coach. Give a deeper explanation of this grammar correction in 3-4 sentences. Explain the rule clearly, give 2 practical examples in different contexts, and end with a simple tip to remember it. No bullet points, plain text only.`;
-    } else if (category === 'custom') {
-      systemPrompt = `You are an expert English coach adapting to the user's specific learning goal. Give a deeper explanation of this correction in 3-4 sentences. Be precise and thorough — if this seems exam-related, use formal language and explain why this would score higher. If it seems topic-specific, focus on that topic with practical examples. No bullet points, plain text only.`;
+    if (mode === 'realtalk') {
+      systemPrompt = `You are a native English speaker friend — casual, funny, slightly ironic. Give a deeper explanation of this correction in 3-4 sentences. Use informal language, real-life examples from everyday conversation, TV shows or social media. If the original was slang or informal but acceptable, be encouraging and tell them when and where it works. If it was a real grammar error, explain it like a friend would — no lectures, just straight talk. No bullet points, just talk like a friend.`;
+    } else if (mode === 'custom') {
+      systemPrompt = `You are an expert English coach adapting to the user's specific learning goal. Give a deeper, thorough explanation in 4-5 sentences. If this seems exam-related (C1, IELTS, Cambridge etc.), use formal language, explain why the corrected version would score higher, and suggest even more sophisticated alternatives if possible. If it seems topic-specific, focus deeply on that topic with precise examples. Be the strictest and most helpful coach possible. No bullet points, plain text only.`;
     } else {
-      systemPrompt = `You are a friendly English coach. Give a deeper explanation of this correction in 3-4 sentences. Include why it matters, 2 practical examples, and a simple tip to remember. No bullet points, plain text only.`;
+      systemPrompt = `You are a friendly and encouraging English coach. Give a deeper explanation of this correction in 3-4 sentences. Explain clearly why it matters, give 2 practical examples in different contexts, and end with a simple tip to remember it. No bullet points, plain text only.`;
     }
 
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
