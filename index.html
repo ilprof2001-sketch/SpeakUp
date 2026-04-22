@@ -707,6 +707,7 @@
   }
   .paywall-dismiss:hover { color: var(--text-muted); }
 </style>
+<script async crossorigin="anonymous" data-clerk-publishable-key="pk_test_c3VubnktcGFuZ29saW4tMzkuY2xlcmsuYWNjb3VudHMuZGV2JA" src="https://sunny-pangolin-39.clerk.accounts.dev/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"></script>
 </head>
 <body>
 
@@ -823,6 +824,16 @@
     <button class="btn-new-session" onclick="newSession()">↩ New session</button>
   </div>
 
+</div>
+
+<div class="paywall-overlay" id="login-overlay">
+  <div class="paywall-card">
+    <div class="paywall-icon">👋</div>
+    <div class="paywall-title">Sign in to continue</div>
+    <div class="paywall-subtitle">Create a free account to keep improving your English after every conversation.</div>
+    <div id="clerk-mount" style="margin: 20px 0;"></div>
+    <button class="paywall-dismiss" onclick="closeLogin()">Maybe later</button>
+  </div>
 </div>
 
 <div class="paywall-overlay" id="paywall-overlay">
@@ -995,7 +1006,18 @@ async function stopRecording() {
 }
 
 async function analyse() {
-  if (getSessions() >= MAX_SESSIONS_FREE) { document.getElementById('paywall-overlay').classList.add('visible'); return; }
+  if (getSessions() >= MAX_SESSIONS_FREE) {
+    const user = window.Clerk && window.Clerk.user;
+    if (!user) {
+      showLoginModal();
+      return;
+    }
+    const premium = user.publicMetadata && user.publicMetadata.premium;
+    if (!premium) {
+      document.getElementById('paywall-overlay').classList.add('visible');
+      return;
+    }
+  }
   const text = document.getElementById('transcript-box').textContent.trim() || document.getElementById('manual-textarea').value.trim();
   if (!text) { showError('No text to analyse. Record your voice or paste a transcript.'); return; }
   document.getElementById('step-analyse').style.display = 'none';
@@ -1024,6 +1046,32 @@ async function analyse() {
 }
 
 function closePaywall() { document.getElementById('paywall-overlay').classList.remove('visible'); }
+function closeLogin() { document.getElementById('login-overlay').classList.remove('visible'); }
+
+function showLoginModal() {
+  document.getElementById('login-overlay').classList.add('visible');
+  const mountEl = document.getElementById('clerk-mount');
+  mountEl.innerHTML = '';
+  if (window.Clerk && window.Clerk.mountSignIn) {
+    window.Clerk.mountSignIn(mountEl);
+  }
+}
+
+window.addEventListener('load', () => {
+  if (window.Clerk) {
+    window.Clerk.load({ publishableKey: 'pk_test_c3VubnktcGFuZ29saW4tMzkuY2xlcmsuYWNjb3VudHMuZGV2JA' }).then(() => {
+      window.Clerk.addListener(({ user }) => {
+        if (user) {
+          closeLogin();
+          const premium = user.publicMetadata && user.publicMetadata.premium;
+          if (!premium) {
+            document.getElementById('paywall-overlay').classList.add('visible');
+          }
+        }
+      });
+    });
+  }
+});
 function handleUpgrade() { window.open('https://buy.stripe.com/5kQbJ18OZ1BAa5ic8K5AQ00', '_blank'); }
 
 function calcScore(corrections) {
