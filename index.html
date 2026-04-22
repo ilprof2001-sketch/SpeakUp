@@ -1058,7 +1058,9 @@ function closePaywall() { document.getElementById('paywall-overlay').classList.r
 
 function showSessionBanner() {
   if (isPremium()) return;
-  const remaining = Math.max(0, getMaxSessions() - getSessions());
+  const sessions = getSessions();
+  if (sessions === 0) return;
+  const remaining = Math.max(0, getMaxSessions() - sessions);
   if (remaining <= 0 || isLoggedIn()) return;
   updateBadge();
   const banner = document.getElementById('session-banner');
