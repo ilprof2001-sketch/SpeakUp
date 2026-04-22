@@ -98,7 +98,7 @@
 
   .modes {
     display: grid;
-    grid-template-columns: repeat(6, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 8px;
   }
 
@@ -725,17 +725,8 @@
       <button class="mode-btn active" data-mode="top5" onclick="selectMode(this)">
         <span class="mode-icon">✦</span><span class="mode-name">Top 5</span>
       </button>
-      <button class="mode-btn" data-mode="custom" onclick="selectMode(this)">
-  <span class="mode-icon">◉</span><span class="mode-name">Custom</span>
-</button>
-<button class="mode-btn" data-mode="realtalk" onclick="selectMode(this)">
-  <span class="mode-icon">◎</span><span class="mode-name">Real Talk</span>
-</button>
-      <button class="mode-btn" data-mode="natural" onclick="selectMode(this)">
-        <span class="mode-icon">◈</span><span class="mode-name">Fluency</span>
-      </button>
-      <button class="mode-btn" data-mode="simplicity" onclick="selectMode(this)">
-        <span class="mode-icon">◇</span><span class="mode-name">Clarity</span>
+      <button class="mode-btn" data-mode="realtalk" onclick="selectMode(this)">
+        <span class="mode-icon">◎</span><span class="mode-name">Real Talk</span>
       </button>
       <button class="mode-btn" data-mode="custom" onclick="selectMode(this)">
         <span class="mode-icon">◉</span><span class="mode-name">Custom</span>
@@ -1011,7 +1002,7 @@ async function analyse() {
   document.getElementById('transcript-section').classList.remove('visible');
   document.getElementById('error-box').classList.remove('visible');
   document.getElementById('loading-state').classList.add('visible');
-  const modeNames = {top5:'Top 5',grammar:'Grammar',natural:'Fluency',simplicity:'Clarity',custom:'Custom',realtalk:'Real Talk'};
+  const modeNames = {top5:'Top 5',realtalk:'Real Talk',custom:'Custom'};
   const customFocus = document.getElementById('custom-focus-input').value.trim();
   const loadingMsgs = ['Analysing your speaking…','Selecting the best corrections…','Almost done…'];
   let mi = 0;
