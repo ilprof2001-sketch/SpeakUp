@@ -1060,6 +1060,7 @@ function showSessionBanner() {
   if (isPremium()) return;
   const remaining = Math.max(0, getMaxSessions() - getSessions());
   if (remaining <= 0 || isLoggedIn()) return;
+  updateBadge();
   const banner = document.getElementById('session-banner');
   const text = document.getElementById('session-banner-text');
   text.textContent = remaining === 1 ? 'Last free session — sign in to get more' : remaining + ' free sessions left';
