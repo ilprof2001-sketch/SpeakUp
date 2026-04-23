@@ -724,7 +724,8 @@
 
   <div class="header">
     <div class="logo">After<em>call</em></div>
-    <div class="session-badge" id="session-badge">3 free sessions</div>
+   <div class="session-badge" id="session-badge">3 sessions left</div>
+<div id="user-button-mount" style="display:none;"></div> 
   </div>
 
   <div class="section" id="step-mode">
@@ -1082,18 +1083,37 @@ function showLoginModal() {
 window.addEventListener('load', () => {
   if (window.Clerk) {
     window.Clerk.load({ publishableKey: 'pk_test_c3VubnktcGFuZ29saW4tMzkuY2xlcmsuYWNjb3VudHMuZGV2JA' }).then(() => {
+      updateBadge();
+      updateUserButton();
       window.Clerk.addListener(({ user }) => {
         if (user) {
           closeLogin();
+          document.getElementById('session-banner').style.display = 'none';
+          updateBadge();
+          updateUserButton();
           const premium = user.publicMetadata && user.publicMetadata.premium;
-          if (!premium) {
+          if (!premium && getSessions() >= MAX_SESSIONS_LOGGED) {
             document.getElementById('paywall-overlay').classList.add('visible');
           }
+        } else {
+          updateBadge();
+          updateUserButton();
         }
       });
     });
   }
 });
+
+function updateUserButton() {
+  const el = document.getElementById('user-button-mount');
+  if (!el) return;
+  if (window.Clerk && window.Clerk.user) {
+    el.style.display = 'block';
+    window.Clerk.mountUserButton(el);
+  } else {
+    el.style.display = 'none';
+  }
+}
 function handleUpgrade() { window.open('https://buy.stripe.com/5kQbJ18OZ1BAa5ic8K5AQ00', '_blank'); }
 
 function calcScore(corrections) {
