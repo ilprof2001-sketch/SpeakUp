@@ -1105,13 +1105,13 @@ window.addEventListener('load', () => {
 });
 
 function updateUserButton() {
-  const el = document.getElementById('user-button-mount');
-  if (!el) return;
+  const badge = document.getElementById('session-badge');
   if (window.Clerk && window.Clerk.user) {
-    el.style.display = 'block';
-    window.Clerk.mountUserButton(el);
+    const name = window.Clerk.user.firstName || window.Clerk.user.emailAddresses[0].emailAddress.split('@')[0];
+    badge.innerHTML = 'Hi, ' + name + ' · <span onclick="window.Clerk.signOut()" style="cursor:pointer;text-decoration:underline;">Sign out</span>';
+    badge.className = 'session-badge';
   } else {
-    el.style.display = 'none';
+    updateBadge();
   }
 }
 function handleUpgrade() { window.open('https://buy.stripe.com/5kQbJ18OZ1BAa5ic8K5AQ00', '_blank'); }
