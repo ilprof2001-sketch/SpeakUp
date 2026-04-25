@@ -1091,10 +1091,6 @@ window.addEventListener('load', () => {
           document.getElementById('session-banner').style.display = 'none';
           updateBadge();
           updateUserButton();
-          const premium = user.publicMetadata && user.publicMetadata.premium;
-          if (!premium && getSessions() >= MAX_SESSIONS_LOGGED) {
-            document.getElementById('paywall-overlay').classList.add('visible');
-          }
         } else {
           updateBadge();
           updateUserButton();
