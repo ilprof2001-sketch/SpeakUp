@@ -844,8 +844,8 @@
 <div class="paywall-overlay" id="paywall-overlay">
   <div class="paywall-card">
     <div class="paywall-icon">🎯</div>
-    <div class="paywall-title">You've used your 3 free sessions</div>
-    <div class="paywall-subtitle">Upgrade to Premium to keep improving after every conversation.</div>
+    <div class="paywall-title">You've used all your free sessions</div>
+<div class="paywall-subtitle">Upgrade to Premium for unlimited sessions and keep improving after every conversation.</div>
     <div class="paywall-price">€9.99 <span>/ month</span></div>
     <div class="paywall-features">
       <div class="paywall-feature">Unlimited sessions</div>
@@ -1104,7 +1104,10 @@ function updateUserButton() {
   const badge = document.getElementById('session-badge');
   if (window.Clerk && window.Clerk.user) {
     const name = window.Clerk.user.firstName || window.Clerk.user.emailAddresses[0].emailAddress.split('@')[0];
-    badge.innerHTML = 'Hi, ' + name + ' · <span onclick="window.Clerk.signOut()" style="cursor:pointer;text-decoration:underline;">Sign out</span>';
+    const sessions = getSessions();
+    const remaining = Math.max(0, MAX_SESSIONS_LOGGED - sessions);
+    const sessionText = isPremium() ? '✦ Premium' : remaining + ' left';
+    badge.innerHTML = 'Hi, ' + name + ' · ' + sessionText + ' · <span onclick="window.Clerk.signOut()" style="cursor:pointer;text-decoration:underline;">Sign out</span>';
     badge.className = 'session-badge';
   } else {
     updateBadge();
