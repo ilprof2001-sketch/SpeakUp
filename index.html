@@ -435,7 +435,7 @@
   .results-section { display: none; }
   .results-section.visible { display: block; }
 
-  .score-banner {
+
     display: none;
     background: linear-gradient(135deg, #6c47ff 0%, #4f35cc 100%);
     border-radius: var(--r-lg);
@@ -814,16 +814,7 @@
   </div>
 
   <div class="results-section" id="results-section">
-    <div class="score-banner" id="score-banner">
-      <div class="score-left">
-        <div class="score-label">Speaking score</div>
-        <div class="score-value" id="score-value">0<span>/100</span></div>
-      </div>
-      <div class="score-right">
-        <div class="score-bar-wrap"><div class="score-bar-fill" id="score-bar-fill"></div></div>
-        <div class="score-msg" id="score-msg">Keep going!</div>
-      </div>
-    </div>
+   
     <div class="results-header">
       <div class="results-title">Your 5 corrections</div>
       <div class="results-mode-tag" id="results-mode-tag">Top 5</div>
@@ -1115,19 +1106,7 @@ function updateUserButton() {
 }
 function handleUpgrade() { window.open('https://buy.stripe.com/5kQbJ18OZ1BAa5ic8K5AQ00', '_blank'); }
 
-function calcScore(corrections) {
-  const base = 100;
-  const deduction = corrections.length * 8;
-  const categoryBonus = corrections.filter(c => c.category === 'improvement').length * 2;
-  return Math.max(45, Math.min(95, base - deduction + categoryBonus + Math.floor(Math.random() * 8)));
-}
 
-function getScoreMsg(score) {
-  if (score >= 85) return '🌟 Excellent!';
-  if (score >= 72) return '👍 Good job!';
-  if (score >= 60) return '💪 Keep going!';
-  return '📈 Room to grow!';
-}
 
 function launchConfetti() {
   const wrap = document.getElementById('confetti-wrap');
@@ -1149,13 +1128,7 @@ function launchConfetti() {
 // FIX: usa dataset invece di parametri onclick per evitare problemi con apostrofi
 function renderResults(corrections, modeName) {
   document.getElementById('results-mode-tag').textContent = modeName;
-  const score = calcScore(corrections);
-  document.getElementById('score-banner').classList.add('visible');
-  document.getElementById('score-msg').textContent = getScoreMsg(score);
-  setTimeout(() => {
-    document.getElementById('score-value').innerHTML = score + '<span>/100</span>';
-    document.getElementById('score-bar-fill').style.width = score + '%';
-  }, 200);
+  
   launchConfetti();
   const list = document.getElementById('corrections-list');
   list.innerHTML = '';
