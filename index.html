@@ -540,6 +540,28 @@
     padding-top: 12px;
   }
 
+  .btn-share {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-faint);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    transition: opacity 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .btn-share:hover { color: var(--accent); }
+
+  #share-canvas-wrap {
+    position: fixed;
+    top: -9999px;
+    left: -9999px;
+  }
+
   .corr-footer {
     margin-top: 10px;
     display: flex;
@@ -712,6 +734,7 @@
 <body>
 
 <div class="confetti-wrap" id="confetti-wrap"></div>
+<div id="share-canvas-wrap"><canvas id="share-canvas" width="1080" height="1080"></canvas></div>
 <div id="session-banner" style="display:none; position:fixed; bottom:0; left:0; right:0; background:#1a1b2e; color:white; padding:12px 20px; align-items:center; justify-content:space-between; z-index:50; font-size:13px;">
   <span id="session-banner-text">You have 2 sessions left</span>
   <div style="display:flex; gap:10px; align-items:center;">
@@ -1151,6 +1174,8 @@ function renderResults(corrections, modeName) {
           <div class="tell-spinner"></div>
           <span class="tell-label">Tell me more</span>
         </button>
+        <span style="color:var(--border-med); margin: 0 4px;">·</span>
+        <button class="btn-share">↗ Share</button>
       </div>
       <div class="corr-deep"></div>
     `;
@@ -1161,6 +1186,8 @@ function renderResults(corrections, modeName) {
     btn.dataset.explanation = c.explanation;
     btn.dataset.category = c.category;
     btn.addEventListener('click', () => tellMeMore(btn));
+    const shareBtn = card.querySelector('.btn-share');
+    shareBtn.addEventListener('click', () => shareCorrection(c.original, c.corrected));
     list.appendChild(card);
   });
   document.getElementById('results-section').classList.add('visible');
@@ -1204,7 +1231,99 @@ async function tellMeMore(btn) {
   btn.classList.remove('loading');
 }
 
-function showError(msg) { const el=document.getElementById('error-box'); el.textContent=msg; el.classList.add('visible'); }
+function shareCorrection(original, corrected) {
+  const canvas = document.getElementById('share-canvas');
+  const ctx = canvas.getContext('2d');
+  const w = 1080, h = 1080;
+
+  // Sfondo scuro
+  ctx.fillStyle = '#1a1b2e';
+  ctx.fillRect(0, 0, w, h);
+
+  // Bordo viola sottile
+  ctx.strokeStyle = '#6c47ff';
+  ctx.lineWidth = 6;
+  ctx.strokeRect(3, 3, w - 6, h - 6);
+
+  // Logo Aftercall
+  ctx.font = 'bold 48px sans-serif';
+  ctx.fillStyle = '#6c47ff';
+  ctx.fillText('Aftercall', 80, 100);
+
+  // Linea separatore
+  ctx.fillStyle = '#2a2b3e';
+  ctx.fillRect(80, 120, w - 160, 3);
+
+  // Label "I said"
+  ctx.font = '500 36px sans-serif';
+  ctx.fillStyle = '#6b7280';
+  ctx.fillText('I said', 80, 220);
+
+  // Frase originale (barrata in rosso)
+  ctx.font = 'bold 52px sans-serif';
+  ctx.fillStyle = '#ef4444';
+  const origLines = wrapText(ctx, original, w - 160, 52);
+  let y = 280;
+  origLines.forEach(line => {
+    ctx.fillText(line, 80, y);
+    // Barra la frase
+    const metrics = ctx.measureText(line);
+    ctx.fillStyle = '#ef4444';
+    ctx.fillRect(80, y - 30, metrics.width, 4);
+    ctx.fillStyle = '#ef4444';
+    y += 70;
+  });
+
+  // Freccia
+  ctx.font = 'bold 60px sans-serif';
+  ctx.fillStyle = '#6c47ff';
+  ctx.fillText('↓', 80, y + 40);
+  y += 100;
+
+  // Label "Better"
+  ctx.font = '500 36px sans-serif';
+  ctx.fillStyle = '#6b7280';
+  ctx.fillText('Better', 80, y);
+  y += 60;
+
+  // Frase corretta (verde)
+  ctx.font = 'bold 52px sans-serif';
+  ctx.fillStyle = '#10b981';
+  const corrLines = wrapText(ctx, corrected, w - 160, 52);
+  corrLines.forEach(line => {
+    ctx.fillText(line, 80, y);
+    y += 70;
+  });
+
+  // Footer
+  ctx.font = '500 32px sans-serif';
+  ctx.fillStyle = '#4a2fd4';
+  ctx.fillText('aftercall.tech', 80, h - 80);
+
+  // Download
+  const link = document.createElement('a');
+  link.download = 'aftercall-correction.png';
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+
+function wrapText(ctx, text, maxWidth, fontSize) {
+  const words = text.split(' ');
+  const lines = [];
+  let current = '';
+  words.forEach(word => {
+    const test = current ? current + ' ' + word : word;
+    if (ctx.measureText(test).width > maxWidth && current) {
+      lines.push(current);
+      current = word;
+    } else {
+      current = test;
+    }
+  });
+  if (current) lines.push(current);
+  return lines;
+}
+ function showError(msg) { const el=document.getElementById('error-box'); el.textContent=msg; el.classList.add('visible'); }
 function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
 function newSession() {
