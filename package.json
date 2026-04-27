@@ -3,6 +3,8 @@
   "version": "1.0.0",
   "type": "module",
   "dependencies": {
-    "openai": "^4.0.0"
+    "openai": "^4.0.0",
+    "stripe": "^14.0.0",
+    "@clerk/backend": "^1.0.0"
   }
 }
