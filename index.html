@@ -1239,7 +1239,13 @@ async function tellMeMore(btn) {
 function shareOnTwitter(original, corrected) {
   const text = `I said this in English 😭\n\n❌ "${original}"\n✅ "${corrected}"\n\nAftercall caught me lacking 💀\naftercall.tech`;
   const url = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(text);
-  window.open(url, '_blank');
+  const a = document.createElement('a');
+  a.href = url;
+  a.target = '_blank';
+  a.rel = 'noopener';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
 }
 
 function copyCorrection(original, corrected, btn) {
