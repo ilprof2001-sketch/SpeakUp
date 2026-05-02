@@ -1067,8 +1067,133 @@
     transition: color 0.15s;
   }
   .paywall-dismiss:hover { color: var(--text-muted); }
+ /* ── PROGRESS DRAWER ─────────────────────────────── */
+.progress-overlay {
+  position: fixed; inset: 0; background: rgba(26,27,46,0.4);
+  backdrop-filter: blur(4px); z-index: 200;
+}
+.progress-drawer {
+  position: fixed; top: 0; right: 0; bottom: 0;
+  width: 380px; max-width: 95vw;
+  background: var(--surface); border-left: 1.5px solid var(--border);
+  box-shadow: -8px 0 40px rgba(0,0,0,0.12);
+  z-index: 201; overflow-y: auto;
+  animation: slideInRight 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  padding-bottom: 40px;
+}
+@keyframes slideInRight {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+.drawer-header {
+  padding: 20px 20px 16px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; background: var(--surface); z-index: 1;
+}
+.drawer-title { font-size: 16px; font-weight: 700; color: var(--text); letter-spacing: -0.3px; }
+.drawer-close {
+  width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid var(--border);
+  background: var(--surface); color: var(--text-muted); cursor: pointer;
+  display: flex; align-items: center; justify-content: center; font-size: 16px;
+  transition: all 0.15s; font-family: inherit;
+}
+.drawer-close:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+.streak-card {
+  margin: 16px 16px 0;
+  background: linear-gradient(135deg, #6c47ff 0%, #4f35cc 100%);
+  border-radius: var(--r-lg); padding: 20px;
+  color: white; display: flex; align-items: center; gap: 16px;
+  box-shadow: 0 8px 24px rgba(108,71,255,0.3);
+}
+.streak-flame { font-size: 40px; line-height: 1; }
+.streak-info { flex: 1; }
+.streak-number { font-size: 32px; font-weight: 700; letter-spacing: -1px; line-height: 1; }
+.streak-label { font-size: 12px; font-weight: 500; opacity: 0.8; margin-top: 2px; }
+.streak-best { font-size: 11px; opacity: 0.65; margin-top: 6px; }
+.week-dots { display: flex; gap: 6px; margin-top: 12px; }
+.week-dot {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.6);
+}
+.week-dot.active { background: white; color: var(--accent); }
+.week-dot.today { background: rgba(255,255,255,0.35); color: white; border: 1.5px solid rgba(255,255,255,0.6); }
+.stats-row {
+  margin: 12px 16px 0;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+}
+.stat-card {
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: var(--r); padding: 14px 16px; box-shadow: var(--shadow);
+}
+.stat-number { font-size: 24px; font-weight: 700; color: var(--text); letter-spacing: -0.5px; }
+.stat-label { font-size: 11px; font-weight: 500; color: var(--text-faint); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.06em; }
+.chart-section { margin: 16px 16px 0; }
+.chart-title { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-faint); margin-bottom: 10px; }
+.chart-bars { display: flex; flex-direction: column; gap: 8px; }
+.chart-row { display: flex; align-items: center; gap: 10px; }
+.chart-label { font-size: 12px; font-weight: 500; color: var(--text-muted); width: 80px; flex-shrink: 0; }
+.chart-bar-wrap { flex: 1; height: 8px; background: var(--surface-2); border-radius: 4px; overflow: hidden; }
+.chart-bar-fill { height: 100%; border-radius: 4px; transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.chart-count { font-size: 11px; font-weight: 600; color: var(--text-faint); width: 20px; text-align: right; }
+.guest-banner {
+  margin: 12px 16px 0; background: var(--accent-light);
+  border: 1.5px solid rgba(108,71,255,0.2); border-radius: var(--r);
+  padding: 12px 14px; display: flex; align-items: center; gap: 10px;
+}
+.guest-banner-text { font-size: 12px; color: var(--accent-text); font-weight: 500; line-height: 1.5; flex: 1; }
+.guest-banner-btn {
+  font-size: 11px; font-weight: 600; color: white; background: var(--accent);
+  border: none; padding: 6px 12px; border-radius: 20px; cursor: pointer;
+  white-space: nowrap; font-family: inherit; transition: all 0.15s; flex-shrink: 0;
+}
+.guest-banner-btn:hover { background: var(--accent-2); }
+.sessions-section { margin: 16px 16px 0; }
+.sessions-title { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-faint); margin-bottom: 10px; }
+.session-item {
+  border: 1.5px solid var(--border); border-radius: var(--r);
+  margin-bottom: 8px; background: var(--surface); box-shadow: var(--shadow); overflow: hidden;
+}
+.session-item:hover { border-color: var(--border-med); }
+.session-item-header {
+  padding: 12px 14px; cursor: pointer;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.session-meta { display: flex; align-items: center; gap: 8px; }
+.session-date { font-size: 12px; font-weight: 600; color: var(--text); }
+.session-mode-tag {
+  font-size: 10px; font-weight: 600; color: var(--accent-text);
+  background: var(--accent-light); padding: 2px 8px; border-radius: 20px;
+}
+.session-count { font-size: 11px; color: var(--text-faint); }
+.session-chevron { font-size: 12px; color: var(--text-faint); transition: transform 0.2s; }
+.session-item.open .session-chevron { transform: rotate(180deg); }
+.session-corrections-list { display: none; border-top: 1px solid var(--border); padding: 10px 14px; }
+.session-item.open .session-corrections-list { display: block; }
+.mini-correction { margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+.mini-correction:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+.mini-phrases { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; flex-wrap: wrap; }
+.mini-original { font-size: 11px; color: #b91c1c; background: var(--red-light); padding: 3px 8px; border-radius: 6px; font-weight: 500; text-decoration: line-through; }
+.mini-arrow { font-size: 10px; color: var(--text-faint); }
+.mini-corrected { font-size: 11px; color: #065f46; background: var(--green-light); padding: 3px 8px; border-radius: 6px; font-weight: 500; }
+.mini-expl { font-size: 11px; color: var(--text-faint); line-height: 1.5; }
+.drawer-empty {
+  margin: 40px 16px; text-align: center;
+}
+.drawer-empty-icon { font-size: 40px; margin-bottom: 12px; }
+.drawer-empty-title { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+.drawer-empty-sub { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+.btn-progress {
+  font-size: 12px; font-weight: 600; color: var(--text-muted);
+  background: var(--surface-2); border: 1.5px solid var(--border);
+  padding: 6px 12px; border-radius: 20px; cursor: pointer;
+  font-family: inherit; transition: all 0.15s;
+  display: flex; align-items: center; gap: 5px;
+}
+.btn-progress:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
 </style>
-<script async crossorigin="anonymous" data-clerk-publishable-key="pk_test_c3VubnktcGFuZ29saW4tMzkuY2xlcmsuYWNjb3VudHMuZGV2JA" src="https://sunny-pangolin-39.clerk.accounts.dev/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"></script>
+ <script async crossorigin="anonymous" data-clerk-publishable-key="pk_test_c3VubnktcGFuZ29saW4tMzkuY2xlcmsuYWNjb3VudHMuZGV2JA" src="https://sunny-pangolin-39.clerk.accounts.dev/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"></script>
 </head>
 <body>
 
@@ -1171,129 +1296,51 @@
 <div class="app" id="app-section">
 
   <div class="header">
-    <div class="logo">After<em>call</em></div>
-   <div class="session-badge" id="session-badge">3 sessions left</div>
-<div id="user-button-mount" style="display:none;"></div> 
-  </div>
-
-  <div class="section" id="step-mode">
-    <div class="label">Choose your focus</div>
-    <div class="modes">
-      <button class="mode-btn active" data-mode="top5" onclick="selectMode(this)">
-        <span class="mode-icon">✦</span><span class="mode-name">Top 5</span>
-      </button>
-      <button class="mode-btn" data-mode="realtalk" onclick="selectMode(this)">
-        <span class="mode-icon">◎</span><span class="mode-name">Real Talk</span>
-      </button>
-      <button class="mode-btn" data-mode="custom" onclick="selectMode(this)">
-        <span class="mode-icon">◉</span><span class="mode-name">Custom</span>
-      </button>
-    </div>
-    <div class="custom-input-wrap" id="custom-input-wrap">
-      <input type="text" id="custom-focus-input" placeholder="e.g. C1 exam, sound more posh, job interview…" />
-    </div>
-  </div>
-
-  <div class="section" id="step-record">
-    <div class="label">Record your conversation</div>
-    <div class="recorder-card">
-      <div class="rec-timer" id="timer">0:00</div>
-      <div class="rec-waveform" id="waveform">
-        <div class="wave-bar" style="height:5px" id="wb0"></div>
-        <div class="wave-bar" style="height:10px" id="wb1"></div>
-        <div class="wave-bar" style="height:4px" id="wb2"></div>
-        <div class="wave-bar" style="height:14px" id="wb3"></div>
-        <div class="wave-bar" style="height:8px" id="wb4"></div>
-        <div class="wave-bar" style="height:18px" id="wb5"></div>
-        <div class="wave-bar" style="height:6px" id="wb6"></div>
-        <div class="wave-bar" style="height:12px" id="wb7"></div>
-        <div class="wave-bar" style="height:9px" id="wb8"></div>
-        <div class="wave-bar" style="height:16px" id="wb9"></div>
-        <div class="wave-bar" style="height:5px" id="wb10"></div>
-        <div class="wave-bar" style="height:11px" id="wb11"></div>
-      </div>
-      <div class="rec-controls">
-        <div class="record-ring-wrap">
-          <svg class="record-ring" viewBox="0 0 72 72">
-            <defs>
-              <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stop-color="#6c47ff"/>
-                <stop offset="100%" stop-color="#ef4444"/>
-              </linearGradient>
-            </defs>
-            <circle class="record-ring-bg" cx="36" cy="36" r="31"/>
-            <circle class="record-ring-fill" id="ring-fill" cx="36" cy="36" r="31"/>
-          </svg>
-          <button class="btn-record" id="btn-record" onclick="toggleRecord()">
-            <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="6"/></svg>
-          </button>
-        </div>
-        <button class="btn-stop" id="btn-stop" onclick="stopRecording()">Stop & transcribe</button>
-      </div>
-      <div class="transcribing-badge" id="transcribing-badge">
-        <div class="t-spinner"></div>
-        <span>Transcribing with Whisper…</span>
-      </div>
-      <div class="limit-bar-wrap">
-        <div class="limit-bar"><div class="limit-bar-fill" id="limit-fill"></div></div>
-        <div class="limit-label" id="limit-label">5:00 free</div>
-      </div>
-      <div class="rec-hint" id="rec-hint">Speak naturally, then hit record. We'll take care of the rest.</div>
-    </div>
-    <div style="margin-top: 10px; display: flex; justify-content: flex-end;">
-      <button class="textarea-toggle" onclick="toggleManual()">or paste text manually</button>
-    </div>
-    <textarea class="manual-textarea" id="manual-textarea" placeholder="Paste or type a transcript of what you said…"></textarea>
-  </div>
-
-  <div class="section transcript-section" id="transcript-section">
-    <div class="label">Transcript</div>
-    <div class="transcript-box" id="transcript-box"></div>
-  </div>
-
-  <div class="section" id="step-analyse" style="display:none;">
-    <button class="btn-analyse" onclick="analyse()">Analyse →</button>
-    <div class="error-box" id="error-box"></div>
-  </div>
-
-  <div class="loading-state" id="loading-state">
-    <div class="spinner"></div>
-    <span id="loading-msg">Analysing your speaking…</span>
-  </div>
-
-  <div class="results-section" id="results-section">
-   
-    <div class="results-header">
-      <div class="results-title">Your 5 corrections</div>
-      <div class="results-mode-tag" id="results-mode-tag">Top 5</div>
-    </div>
-    <div id="corrections-list"></div>
-    <button class="btn-new-session" onclick="newSession()">↩ New session</button>
-  </div>
-
-</div>
-
-<div class="paywall-overlay" id="login-overlay">
-  <div style="position: relative;">
-    <div id="clerk-mount"></div>
-    <button class="paywall-dismiss" onclick="closeLogin()" style="display: block; margin: 12px auto 0; text-align: center;">Maybe later</button>
+  <div class="logo">After<em>call</em></div>
+  <div style="display:flex; align-items:center; gap:10px;">
+    <button class="btn-progress" onclick="openProgressDrawer()">📈 My Progress</button>
+    <div class="session-badge" id="session-badge">3 sessions left</div>
+    <div id="user-button-mount" style="display:none;"></div>
   </div>
 </div>
 
-<div class="paywall-overlay" id="paywall-overlay">
-  <div class="paywall-card">
-    <div class="paywall-icon">🎯</div>
-    <div class="paywall-title">You've used all your free sessions</div>
-<div class="paywall-subtitle">Upgrade to Premium for unlimited sessions and keep improving after every conversation.</div>
-    <div class="paywall-price">€9.99 <span>/ month</span></div>
-    <div class="paywall-features">
-      <div class="paywall-feature">Unlimited sessions</div>
-      <div class="paywall-feature">Sessions up to 30 minutes</div>
-      <div class="paywall-feature">Error history & progress tracking</div>
-      <div class="paywall-feature">All analysis modes</div>
+<!-- PROGRESS DRAWER -->
+<div class="progress-overlay" id="progress-overlay" style="display:none" onclick="closeProgressDrawer()"></div>
+<div class="progress-drawer" id="progress-drawer" style="display:none">
+  <div class="drawer-header">
+    <div class="drawer-title">📈 My Progress</div>
+    <button class="drawer-close" onclick="closeProgressDrawer()">✕</button>
+  </div>
+  <div class="streak-card">
+    <div class="streak-flame">🔥</div>
+    <div class="streak-info">
+      <div class="streak-number" id="streak-number">0</div>
+      <div class="streak-label">day streak</div>
+      <div class="streak-best" id="streak-best">Best: 0 days</div>
+      <div class="week-dots" id="week-dots"></div>
     </div>
-    <button class="btn-upgrade" onclick="handleUpgrade()">Upgrade to Premium</button>
-    <button class="paywall-dismiss" onclick="closePaywall()">Maybe later</button>
+  </div>
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-number" id="stat-sessions">0</div>
+      <div class="stat-label">Sessions</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number" id="stat-corrections">0</div>
+      <div class="stat-label">Corrections</div>
+    </div>
+  </div>
+  <div class="chart-section">
+    <div class="chart-title">Most common errors</div>
+    <div class="chart-bars" id="chart-bars"></div>
+  </div>
+  <div class="guest-banner" id="guest-banner" style="display:none">
+    <div class="guest-banner-text">Sign in to save your history across devices</div>
+    <button class="guest-banner-btn" onclick="closeProgressDrawer(); showLoginModal()">Sign in</button>
+  </div>
+  <div class="sessions-section">
+    <div class="sessions-title">Past sessions</div>
+    <div id="sessions-list"></div>
   </div>
 </div>
 
@@ -1712,7 +1759,142 @@ function newSession() {
 
 updateBadge();
 </script>
+<script>
+const catColors = { grammar:'#3b82f6', natural:'#f59e0b', simplicity:'#8b5cf6', improvement:'#6c47ff', custom:'#f97316', realtalk:'#10b981' };
+const modeDisplayNames = { top5:'Top 5', realtalk:'Real Talk', custom:'Custom' };
 
+function getHistory() { try { return JSON.parse(localStorage.getItem('aftercall_history') || '[]'); } catch(e) { return []; } }
+
+function saveSession(corrections, mode) {
+  const history = getHistory();
+  history.push({ date: new Date().toISOString(), mode, corrections });
+  localStorage.setItem('aftercall_history', JSON.stringify(history));
+}
+
+function computeStreak(history) {
+  if (!history.length) return { current: 0, best: 0 };
+  const days = [...new Set(history.map(s => new Date(s.date).toDateString()))].sort((a,b) => new Date(b)-new Date(a));
+  const today = new Date().toDateString();
+  let current = 0, streak = 0, prev = null;
+  for (const day of days) {
+    if (!prev) {
+      if (day === today || (new Date(today)-new Date(day)) === 86400000) streak = 1; else break;
+    } else {
+      if ((new Date(prev)-new Date(day)) / 86400000 === 1) streak++; else break;
+    }
+    prev = day;
+  }
+  current = streak;
+  streak = 0; prev = null;
+  let best = 0;
+  for (const day of [...days].reverse()) {
+    if (!prev) { streak = 1; } else { streak = (new Date(day)-new Date(prev))/86400000 === 1 ? streak+1 : 1; }
+    best = Math.max(best, streak); prev = day;
+  }
+  return { current, best };
+}
+
+function renderWeekDots(history) {
+  const wrap = document.getElementById('week-dots');
+  wrap.innerHTML = '';
+  const labels = ['M','T','W','T','F','S','S'];
+  const today = new Date();
+  const todayDay = (today.getDay()+6)%7;
+  const usedDays = new Set(history.map(s => new Date(s.date).toDateString()));
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(today); d.setDate(today.getDate()-todayDay+i);
+    const dot = document.createElement('div');
+    const active = usedDays.has(d.toDateString());
+    const isToday = i === todayDay;
+    dot.className = 'week-dot'+(active?' active':isToday?' today':'');
+    dot.textContent = active ? '✓' : labels[i];
+    wrap.appendChild(dot);
+  }
+}
+
+function renderProgressChart(history) {
+  const counts = {};
+  history.forEach(s => s.corrections.forEach(c => { counts[c.category] = (counts[c.category]||0)+1; }));
+  const sorted = Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+  const max = sorted[0]?.[1]||1;
+  const wrap = document.getElementById('chart-bars');
+  wrap.innerHTML = '';
+  if (!sorted.length) { wrap.innerHTML = '<div style="font-size:12px;color:var(--text-faint);padding:8px 0">No data yet</div>'; return; }
+  sorted.forEach(([cat, count]) => {
+    const row = document.createElement('div');
+    row.className = 'chart-row';
+    row.innerHTML = `<div class="chart-label">${cat.charAt(0).toUpperCase()+cat.slice(1)}</div><div class="chart-bar-wrap"><div class="chart-bar-fill" style="width:0%;background:${catColors[cat]||'#6c47ff'}"></div></div><div class="chart-count">${count}</div>`;
+    wrap.appendChild(row);
+    setTimeout(() => { row.querySelector('.chart-bar-fill').style.width = (count/max*100)+'%'; }, 80);
+  });
+}
+
+function renderProgressSessions(history) {
+  const list = document.getElementById('sessions-list');
+  list.innerHTML = '';
+  if (!history.length) {
+    list.innerHTML = `<div class="drawer-empty"><div class="drawer-empty-icon">🎙️</div><div class="drawer-empty-title">No sessions yet</div><div class="drawer-empty-sub">Complete your first session to see your progress here.</div></div>`;
+    return;
+  }
+  const formatDate = iso => {
+    const d = new Date(iso), today = new Date(), yesterday = new Date(today);
+    yesterday.setDate(today.getDate()-1);
+    if (d.toDateString()===today.toDateString()) return 'Today';
+    if (d.toDateString()===yesterday.toDateString()) return 'Yesterday';
+    return d.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+  };
+  [...history].reverse().forEach(session => {
+    const item = document.createElement('div');
+    item.className = 'session-item';
+    item.innerHTML = `
+      <div class="session-item-header">
+        <div class="session-meta">
+          <div class="session-date">${formatDate(session.date)}</div>
+          <div class="session-mode-tag">${modeDisplayNames[session.mode]||session.mode}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="session-count">${session.corrections.length} corrections</div>
+          <div class="session-chevron">▾</div>
+        </div>
+      </div>
+      <div class="session-corrections-list">
+        ${session.corrections.map(c=>`
+          <div class="mini-correction">
+            <div class="mini-phrases">
+              <div class="mini-original">${escHtml(c.original)}</div>
+              <div class="mini-arrow">→</div>
+              <div class="mini-corrected">${escHtml(c.corrected)}</div>
+            </div>
+            <div class="mini-expl">${escHtml(c.explanation)}</div>
+          </div>
+        `).join('')}
+      </div>`;
+    item.querySelector('.session-item-header').addEventListener('click', () => item.classList.toggle('open'));
+    list.appendChild(item);
+  });
+}
+
+function openProgressDrawer() {
+  const history = getHistory();
+  const streak = computeStreak(history);
+  document.getElementById('streak-number').textContent = streak.current;
+  document.getElementById('streak-best').textContent = 'Best: '+streak.best+' day'+(streak.best!==1?'s':'');
+  document.getElementById('stat-sessions').textContent = history.length;
+  document.getElementById('stat-corrections').textContent = history.reduce((a,s)=>a+s.corrections.length,0);
+  renderWeekDots(history);
+  renderProgressChart(history);
+  renderProgressSessions(history);
+  const guestBanner = document.getElementById('guest-banner');
+  guestBanner.style.display = isLoggedIn() ? 'none' : 'flex';
+  document.getElementById('progress-overlay').style.display = 'block';
+  document.getElementById('progress-drawer').style.display = 'block';
+}
+
+function closeProgressDrawer() {
+  document.getElementById('progress-overlay').style.display = 'none';
+  document.getElementById('progress-drawer').style.display = 'none';
+}
+</script>
 <script>
   document.addEventListener('mousemove', (e) => {
     const x = (e.clientX / window.innerWidth) * 100;
