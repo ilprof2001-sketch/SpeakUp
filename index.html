@@ -1531,6 +1531,7 @@ async function analyse() {
     const data = await response.json();
     if (data.error) throw new Error(data.error);
     incrementSessions(); updateBadge(); showSessionBanner();
+   saveSession(data.corrections, selectedMode);
     document.getElementById('loading-state').classList.remove('visible');
     renderResults(data.corrections, modeNames[selectedMode]);
   } catch(err) {
