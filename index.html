@@ -773,7 +773,7 @@
   .results-section { display: none; }
   .results-section.visible { display: block; }
 
-
+  .score-banner {
     display: none;
     background: linear-gradient(135deg, #6c47ff 0%, #4f35cc 100%);
     border-radius: var(--r-lg);
@@ -1341,6 +1341,126 @@
   <div class="sessions-section">
     <div class="sessions-title">Past sessions</div>
     <div id="sessions-list"></div>
+  </div>
+</div>
+
+  <div class="section" id="step-mode">
+    <div class="label">Choose your focus</div>
+    <div class="modes">
+      <button class="mode-btn active" data-mode="top5" onclick="selectMode(this)">
+        <span class="mode-icon">✦</span><span class="mode-name">Top 5</span>
+      </button>
+      <button class="mode-btn" data-mode="realtalk" onclick="selectMode(this)">
+        <span class="mode-icon">◎</span><span class="mode-name">Real Talk</span>
+      </button>
+      <button class="mode-btn" data-mode="custom" onclick="selectMode(this)">
+        <span class="mode-icon">◉</span><span class="mode-name">Custom</span>
+      </button>
+    </div>
+    <div class="custom-input-wrap" id="custom-input-wrap">
+      <input type="text" id="custom-focus-input" placeholder="e.g. C1 exam, sound more posh, job interview…" />
+    </div>
+  </div>
+
+  <div class="section" id="step-record">
+    <div class="label">Record your conversation</div>
+    <div class="recorder-card">
+      <div class="rec-timer" id="timer">0:00</div>
+      <div class="rec-waveform" id="waveform">
+        <div class="wave-bar" style="height:5px" id="wb0"></div>
+        <div class="wave-bar" style="height:10px" id="wb1"></div>
+        <div class="wave-bar" style="height:4px" id="wb2"></div>
+        <div class="wave-bar" style="height:14px" id="wb3"></div>
+        <div class="wave-bar" style="height:8px" id="wb4"></div>
+        <div class="wave-bar" style="height:18px" id="wb5"></div>
+        <div class="wave-bar" style="height:6px" id="wb6"></div>
+        <div class="wave-bar" style="height:12px" id="wb7"></div>
+        <div class="wave-bar" style="height:9px" id="wb8"></div>
+        <div class="wave-bar" style="height:16px" id="wb9"></div>
+        <div class="wave-bar" style="height:5px" id="wb10"></div>
+        <div class="wave-bar" style="height:11px" id="wb11"></div>
+      </div>
+      <div class="rec-controls">
+        <div class="record-ring-wrap">
+          <svg class="record-ring" viewBox="0 0 72 72">
+            <defs>
+              <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#6c47ff"/>
+                <stop offset="100%" stop-color="#ef4444"/>
+              </linearGradient>
+            </defs>
+            <circle class="record-ring-bg" cx="36" cy="36" r="31"/>
+            <circle class="record-ring-fill" id="ring-fill" cx="36" cy="36" r="31"/>
+          </svg>
+          <button class="btn-record" id="btn-record" onclick="toggleRecord()">
+            <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="6"/></svg>
+          </button>
+        </div>
+        <button class="btn-stop" id="btn-stop" onclick="stopRecording()">Stop &amp; transcribe</button>
+      </div>
+      <div class="transcribing-badge" id="transcribing-badge">
+        <div class="t-spinner"></div>
+        <span>Transcribing with Whisper…</span>
+      </div>
+      <div class="limit-bar-wrap">
+        <div class="limit-bar"><div class="limit-bar-fill" id="limit-fill"></div></div>
+        <div class="limit-label" id="limit-label">5:00 free</div>
+      </div>
+      <div class="rec-hint" id="rec-hint">Speak naturally, then hit record. We'll take care of the rest.</div>
+    </div>
+    <div style="margin-top: 10px; display: flex; justify-content: flex-end;">
+      <button class="textarea-toggle" onclick="toggleManual()">or paste text manually</button>
+    </div>
+    <textarea class="manual-textarea" id="manual-textarea" placeholder="Paste or type a transcript of what you said…"></textarea>
+  </div>
+
+  <div class="section transcript-section" id="transcript-section">
+    <div class="label">Transcript</div>
+    <div class="transcript-box" id="transcript-box"></div>
+  </div>
+
+  <div class="section" id="step-analyse" style="display:none;">
+    <button class="btn-analyse" onclick="analyse()">Analyse →</button>
+    <div class="error-box" id="error-box"></div>
+  </div>
+
+  <div class="loading-state" id="loading-state">
+    <div class="spinner"></div>
+    <span id="loading-msg">Analysing your speaking…</span>
+  </div>
+
+  <div class="results-section" id="results-section">
+    <div class="results-header">
+      <div class="results-title">Your 5 corrections</div>
+      <div class="results-mode-tag" id="results-mode-tag">Top 5</div>
+    </div>
+    <div id="corrections-list"></div>
+    <button class="btn-new-session" onclick="newSession()">↩ New session</button>
+  </div>
+
+</div>
+
+<div class="paywall-overlay" id="login-overlay">
+  <div style="position: relative;">
+    <div id="clerk-mount"></div>
+    <button class="paywall-dismiss" onclick="closeLogin()" style="display: block; margin: 12px auto 0; text-align: center;">Maybe later</button>
+  </div>
+</div>
+
+<div class="paywall-overlay" id="paywall-overlay">
+  <div class="paywall-card">
+    <div class="paywall-icon">🎯</div>
+    <div class="paywall-title">You've used all your free sessions</div>
+    <div class="paywall-subtitle">Upgrade to Premium for unlimited sessions and keep improving after every conversation.</div>
+    <div class="paywall-price">€9.99 <span>/ month</span></div>
+    <div class="paywall-features">
+      <div class="paywall-feature">Unlimited sessions</div>
+      <div class="paywall-feature">Sessions up to 30 minutes</div>
+      <div class="paywall-feature">Error history &amp; progress tracking</div>
+      <div class="paywall-feature">All analysis modes</div>
+    </div>
+    <button class="btn-upgrade" onclick="handleUpgrade()">Upgrade to Premium</button>
+    <button class="paywall-dismiss" onclick="closePaywall()">Maybe later</button>
   </div>
 </div>
 
