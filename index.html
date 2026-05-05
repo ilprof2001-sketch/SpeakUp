@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Record your English conversations and get 5 AI-powered corrections. Improve your speaking with every call.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎙️</text></svg>">
 <title>Aftercall — AI English Speaking Coach</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -1193,7 +1195,7 @@
 }
 .btn-progress:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
 </style>
- <script async crossorigin="anonymous" data-clerk-publishable-key="pk_test_c3VubnktcGFuZ29saW4tMzkuY2xlcmsuYWNjb3VudHMuZGV2JA" src="https://sunny-pangolin-39.clerk.accounts.dev/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"></script>
+ <script async crossorigin="anonymous" data-clerk-publishable-key="pk_live_Y2xlcmsuYWZ0ZXJjYWxsLnRlY2gk" src="https://clerk.aftercall.tech/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"></script>
 </head>
 <body>
 
@@ -1467,7 +1469,7 @@
 <script>
 const MAX_SESSIONS_GUEST = 3;
 const MAX_SESSIONS_LOGGED = 6;
-const CLERK_PUBLISHABLE_KEY = 'pk_test_c3VubnktcGFuZ29saW4tMzkuY2xlcmsuYWNjb3VudHMuZGV2JA';
+const CLERK_PUBLISHABLE_KEY = 'pk_live_Y2xlcmsuYWZ0ZXJjYWxsLnRlY2gk';
 const MAX_SECONDS = 300;
 let selectedMode = 'top5';
 let isRecording = false;
@@ -1646,8 +1648,19 @@ async function analyse() {
   let mi = 0;
   const loadTick = setInterval(()=>{mi=(mi+1)%loadingMsgs.length;document.getElementById('loading-msg').textContent=loadingMsgs[mi];},1800);
   try {
-    const response = await fetch('/api/analyse',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text,mode:selectedMode,customFocus})});
+    const headers = {'Content-Type':'application/json'};
+    if (isLoggedIn()) {
+      const token = await window.Clerk.session.getToken();
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+    }
+    const response = await fetch('/api/analyse',{method:'POST',headers,body:JSON.stringify({text,mode:selectedMode,customFocus})});
     clearInterval(loadTick);
+    if (response.status === 403) {
+      document.getElementById('loading-state').classList.remove('visible');
+      document.getElementById('step-analyse').style.display = 'block';
+      document.getElementById('paywall-overlay').classList.add('visible');
+      return;
+    }
     const data = await response.json();
     if (data.error) throw new Error(data.error);
     incrementSessions(); updateBadge(); showSessionBanner();
@@ -1689,7 +1702,7 @@ function showLoginModal() {
 
 window.addEventListener('load', () => {
   if (window.Clerk) {
-    window.Clerk.load({ publishableKey: 'pk_test_c3VubnktcGFuZ29saW4tMzkuY2xlcmsuYWNjb3VudHMuZGV2JA' }).then(() => {
+    window.Clerk.load({ publishableKey: 'pk_live_Y2xlcmsuYWZ0ZXJjYWxsLnRlY2gk' }).then(() => {
       updateBadge();
       updateUserButton();
       window.Clerk.addListener(({ user }) => {
@@ -2028,4 +2041,3 @@ function closeProgressDrawer() {
   });
 </script>
 </body>
-</html>

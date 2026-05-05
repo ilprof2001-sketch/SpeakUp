@@ -35,10 +35,10 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Invalid signature' });
   }
 
-  if (event.type === 'checkout.session.completed' || 
+  if (event.type === 'checkout.session.completed' ||
       event.type === 'customer.subscription.created' ||
       event.type === 'customer.subscription.updated') {
-    
+
     const session = event.data.object;
     const customerEmail = session.customer_email || session.customer_details?.email;
 
@@ -56,6 +56,27 @@ export default async function handler(req, res) {
         console.error('Error updating user metadata:', err);
         return res.status(500).json({ error: 'Failed to update user' });
       }
+    }
+  }
+
+  if (event.type === 'customer.subscription.deleted') {
+    const subscription = event.data.object;
+    try {
+      const customer = await stripe.customers.retrieve(subscription.customer);
+      const customerEmail = customer.email;
+      if (customerEmail) {
+        const users = await clerk.users.getUserList({ emailAddress: [customerEmail] });
+        if (users.data.length > 0) {
+          const user = users.data[0];
+          await clerk.users.updateUserMetadata(user.id, {
+            publicMetadata: { premium: false }
+          });
+          console.log('Premium revoked for:', customerEmail);
+        }
+      }
+    } catch (err) {
+      console.error('Error revoking premium:', err);
+      return res.status(500).json({ error: 'Failed to revoke premium' });
     }
   }
 

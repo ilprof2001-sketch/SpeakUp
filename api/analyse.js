@@ -1,4 +1,8 @@
 import OpenAI from 'openai';
+import { createClerkClient } from '@clerk/backend';
+
+const clerk = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
+const MAX_FREE_SESSIONS = 6;
 
 export const config = {
   api: {
@@ -9,11 +13,35 @@ export const config = {
 };
 
 export default async function handler(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
   try {
     const { text, mode, customFocus } = req.body;
+
+    // Server-side session enforcement for logged-in users
+    let clerkUser = null;
+    const authHeader = req.headers['authorization'];
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.slice(7);
+      try {
+        const payload = await clerk.verifyToken(token);
+        clerkUser = await clerk.users.getUser(payload.sub);
+      } catch {
+        return res.status(401).json({ error: 'Invalid session token' });
+      }
+      const isPremium = clerkUser.publicMetadata?.premium === true;
+      if (!isPremium) {
+        const sessionCount = clerkUser.privateMetadata?.sessionCount || 0;
+        if (sessionCount >= MAX_FREE_SESSIONS) {
+          return res.status(403).json({ error: 'Session limit reached' });
+        }
+      }
+    }
     if (!text || text.trim().length === 0) {
       return res.status(400).json({ error: 'No text provided' });
     }
@@ -77,6 +105,15 @@ ${text}
 
     const raw = completion.choices[0].message.content || '';
     const corrections = JSON.parse(raw.replace(/```json|```/g, '').trim());
+
+    // Increment server-side session count for non-premium logged-in users
+    if (clerkUser && clerkUser.publicMetadata?.premium !== true) {
+      const sessionCount = (clerkUser.privateMetadata?.sessionCount || 0) + 1;
+      await clerk.users.updateUserMetadata(clerkUser.id, {
+        privateMetadata: { sessionCount }
+      });
+    }
+
     return res.status(200).json({ corrections });
   } catch (err) {
     console.error('Analyse error:', err);
