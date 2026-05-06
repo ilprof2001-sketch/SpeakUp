@@ -1625,7 +1625,11 @@ async function stopRecording() {
     const response = await fetch('/api/transcribe',{method:'POST',headers:transcribeHeaders,body:formData});
     const data = await response.json();
     document.getElementById('transcribing-badge').classList.remove('visible');
-    if (data.text && data.text.trim().length>0) {
+    if (!response.ok) {
+      document.getElementById('rec-hint').textContent = 'Transcription failed. Try pasting text manually.';
+      document.getElementById('step-analyse').style.display = 'block';
+      showError(data.error || 'Transcription failed.');
+    } else if (data.text && data.text.trim().length>0) {
       document.getElementById('transcript-box').textContent = data.text.trim();
       document.getElementById('transcript-section').classList.add('visible');
       document.getElementById('step-analyse').style.display = 'block';

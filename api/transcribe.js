@@ -21,28 +21,28 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const authHeader = req.headers['authorization'];
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'Authentication required' });
-  }
   let userIsPremium = false;
   let userId = null;
-  try {
-    const token = authHeader.slice(7);
-    const payload = await clerk.verifyToken(token);
-    userId = payload.sub;
-    const clerkUser = await clerk.users.getUser(userId);
-    userIsPremium = clerkUser.publicMetadata?.premium === true;
-    if (!userIsPremium) {
-      const sessionCount = clerkUser.privateMetadata?.sessionCount || 0;
-      if (sessionCount >= MAX_FREE_SESSIONS) {
-        return res.status(403).json({ error: 'Session limit reached' });
+  const authHeader = req.headers['authorization'];
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    try {
+      const token = authHeader.slice(7);
+      const payload = await clerk.verifyToken(token);
+      userId = payload.sub;
+      const clerkUser = await clerk.users.getUser(userId);
+      userIsPremium = clerkUser.publicMetadata?.premium === true;
+      if (!userIsPremium) {
+        const sessionCount = clerkUser.privateMetadata?.sessionCount || 0;
+        if (sessionCount >= MAX_FREE_SESSIONS) {
+          return res.status(403).json({ error: 'Session limit reached' });
+        }
       }
+    } catch {
+      return res.status(401).json({ error: 'Invalid session token' });
     }
-  } catch {
-    return res.status(401).json({ error: 'Invalid session token' });
   }
-  const allowed = await checkRateLimit(userId, 'transcribe', 10, 3600);
+  const rateLimitId = userId || req.headers['x-forwarded-for'] || 'unknown';
+  const allowed = await checkRateLimit(rateLimitId, 'transcribe', 10, 3600);
   if (!allowed) return res.status(429).json({ error: 'Too many requests. Please slow down.' });
 
   try {
