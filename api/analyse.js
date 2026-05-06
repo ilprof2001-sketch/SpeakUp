@@ -81,10 +81,12 @@ Always correct genuine grammar errors regardless of the focus.`;
     }
 
     const prompt = `You are an expert English speaking coach. A non-native English speaker (likely Italian) has spoken the following transcript during a real conversation.
-Your task: identify exactly 5 high-value corrections. ${modeInstruction}
+Your task: identify up to 5 high-value corrections. ${modeInstruction}
 IMPORTANT RULES:
-- Only select corrections that will genuinely help this speaker improve
-- Do NOT correct every small error — prioritize the most impactful ones
+- Only correct genuine mistakes: wrong grammar, unnatural phrasing a native speaker would never use, or clearly wrong word choice
+- Do NOT rewrite sentences just for style — if the original is grammatically correct and sounds natural, leave it alone
+- Do NOT invent corrections to reach a quota of 5. If there are only 2 real issues, return only 2
+- Do NOT suggest synonyms or rephrasings of correct sentences (e.g. "said" → "remarked", "into" → "in" when both are correct)
 - Each correction must show a real phrase from the transcript (or a close paraphrase)
 - Explanations must be brief, clear, and encouraging (max 2 sentences)
 - Categories must be one of: grammar, natural, simplicity, improvement, custom, realtalk

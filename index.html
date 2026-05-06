@@ -1433,7 +1433,7 @@
 
   <div class="results-section" id="results-section">
     <div class="results-header">
-      <div class="results-title">Your 5 corrections</div>
+      <div class="results-title" id="results-title">Your corrections</div>
       <div class="results-mode-tag" id="results-mode-tag">Top 5</div>
     </div>
     <div class="score-banner" id="score-banner">
@@ -1625,11 +1625,7 @@ async function stopRecording() {
     const response = await fetch('/api/transcribe',{method:'POST',headers:transcribeHeaders,body:formData});
     const data = await response.json();
     document.getElementById('transcribing-badge').classList.remove('visible');
-    if (!response.ok) {
-      document.getElementById('rec-hint').textContent = 'Transcription failed. Try pasting text manually.';
-      document.getElementById('step-analyse').style.display = 'block';
-      showError(data.error || 'Transcription failed.');
-    } else if (data.text && data.text.trim().length>0) {
+    if (data.text && data.text.trim().length>0) {
       document.getElementById('transcript-box').textContent = data.text.trim();
       document.getElementById('transcript-section').classList.add('visible');
       document.getElementById('step-analyse').style.display = 'block';
@@ -1777,6 +1773,8 @@ function launchConfetti() {
 // FIX: usa dataset invece di parametri onclick per evitare problemi con apostrofi
 function renderResults(corrections, modeName) {
   document.getElementById('results-mode-tag').textContent = modeName;
+  const n = corrections.length;
+  document.getElementById('results-title').textContent = n === 1 ? 'Your 1 correction' : `Your ${n} corrections`;
 
   const weights = { grammar: 15, natural: 10 };
   const penalty = corrections.reduce((sum, c) => sum + (weights[c.category] || 5), 0);
