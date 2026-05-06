@@ -80,15 +80,18 @@ Always correct genuine grammar errors regardless of the focus.`;
       modeInstruction = `Select the 5 most impactful corrections across all dimensions.`;
     }
 
-    const prompt = `You are an expert English speaking coach. A non-native English speaker (likely Italian) has spoken the following transcript during a real conversation.
-Your task: identify up to 5 high-value corrections. ${modeInstruction}
-IMPORTANT RULES:
-- Only correct genuine mistakes: wrong grammar, unnatural phrasing a native speaker would never use, or clearly wrong word choice
-- Do NOT rewrite sentences just for style — if the original is grammatically correct and sounds natural, leave it alone
-- Do NOT invent corrections to reach a quota of 5. If there are only 2 real issues, return only 2
-- Do NOT suggest synonyms or rephrasings of correct sentences (e.g. "said" → "remarked", "into" → "in" when both are correct)
-- Each correction must show a real phrase from the transcript (or a close paraphrase)
-- Explanations must be brief, clear, and encouraging (max 2 sentences)
+    const prompt = `You are a strict English speaking coach. A non-native English speaker (likely Italian) has spoken the following transcript.
+Your task: identify ONLY real errors — things a native speaker would consider wrong or clearly unnatural. ${modeInstruction}
+
+STRICT RULES — read carefully:
+- Ask yourself before each correction: "Would a native speaker consider this WRONG, or just different from how they'd phrase it?" Only include it if the answer is clearly WRONG.
+- NEVER rewrite a correct sentence just because a different version exists. Multiple correct phrasings exist in English — that is not an error.
+- NEVER swap synonyms (said/remarked, probably/likely, into/in when both are correct, no matter/regardless). Synonyms are not corrections.
+- NEVER suggest restructuring sentences that are already clear and grammatical.
+- If the text is already good English, return an empty array []. This is a valid and correct response.
+- If there are only 1 or 2 real errors, return only 1 or 2 corrections. Never pad to reach 5.
+- Each correction must fix something genuinely wrong, not something merely different.
+- Explanations must be brief and encouraging (max 2 sentences).
 - Categories must be one of: grammar, natural, simplicity, improvement, custom, realtalk
 Respond ONLY with a valid JSON array. No preamble, no markdown, no extra text.
 Format:
