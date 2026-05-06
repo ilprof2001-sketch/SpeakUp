@@ -25,8 +25,10 @@ export default async function handler(req, res) {
     }
   }
   const rateLimitId = userId || req.headers['x-forwarded-for'] || 'unknown';
-  const allowed = await checkRateLimit(rateLimitId, 'explain', 30, 3600);
-  if (!allowed) return res.status(429).json({ error: 'Too many requests. Please slow down.' });
+  try {
+    const allowed = await checkRateLimit(rateLimitId, 'explain', 30, 3600);
+    if (!allowed) return res.status(429).json({ error: 'Too many requests. Please slow down.' });
+  } catch { /* fail open if Redis is unavailable */ }
 
   try {
     const { original, corrected, explanation, category, mode } = req.body;
