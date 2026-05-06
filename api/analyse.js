@@ -1,5 +1,6 @@
 import OpenAI from 'openai';
 import { createClerkClient } from '@clerk/backend';
+import { checkRateLimit } from './_rateLimit.js';
 
 const clerk = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
 const MAX_FREE_SESSIONS = 6;
@@ -23,14 +24,15 @@ export default async function handler(req, res) {
   try {
     const { text, mode, customFocus } = req.body;
 
-    // Server-side session enforcement for logged-in users
     let clerkUser = null;
+    let userId = null;
     const authHeader = req.headers['authorization'];
     if (authHeader && authHeader.startsWith('Bearer ')) {
       const token = authHeader.slice(7);
       try {
         const payload = await clerk.verifyToken(token);
-        clerkUser = await clerk.users.getUser(payload.sub);
+        userId = payload.sub;
+        clerkUser = await clerk.users.getUser(userId);
       } catch {
         return res.status(401).json({ error: 'Invalid session token' });
       }
@@ -42,6 +44,9 @@ export default async function handler(req, res) {
         }
       }
     }
+    const rateLimitId = userId || req.headers['x-forwarded-for'] || 'unknown';
+    const allowed = await checkRateLimit(rateLimitId, 'analyse', 20, 3600);
+    if (!allowed) return res.status(429).json({ error: 'Too many requests. Please slow down.' });
     if (!text || text.trim().length === 0) {
       return res.status(400).json({ error: 'No text provided' });
     }

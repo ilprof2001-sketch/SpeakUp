@@ -1,4 +1,8 @@
 import OpenAI from 'openai';
+import { createClerkClient } from '@clerk/backend';
+import { checkRateLimit } from './_rateLimit.js';
+
+const clerk = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -8,6 +12,22 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
+
+  const authHeader = req.headers['authorization'];
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Authentication required' });
+  }
+  let userId = null;
+  try {
+    const token = authHeader.slice(7);
+    const payload = await clerk.verifyToken(token);
+    userId = payload.sub;
+  } catch {
+    return res.status(401).json({ error: 'Invalid session token' });
+  }
+  const allowed = await checkRateLimit(userId, 'explain', 30, 3600);
+  if (!allowed) return res.status(429).json({ error: 'Too many requests. Please slow down.' });
+
   try {
     const { original, corrected, explanation, category, mode } = req.body;
     if (!original || !corrected) {

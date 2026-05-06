@@ -1436,6 +1436,16 @@
       <div class="results-title">Your 5 corrections</div>
       <div class="results-mode-tag" id="results-mode-tag">Top 5</div>
     </div>
+    <div class="score-banner" id="score-banner">
+      <div class="score-left">
+        <div class="score-label">Session score</div>
+        <div class="score-value" id="score-value">— <span>/ 100</span></div>
+      </div>
+      <div class="score-right">
+        <div class="score-bar-wrap"><div class="score-bar-fill" id="score-bar-fill"></div></div>
+        <div class="score-msg" id="score-msg"></div>
+      </div>
+    </div>
     <div id="corrections-list"></div>
     <button class="btn-new-session" onclick="newSession()">↩ New session</button>
   </div>
@@ -1470,7 +1480,7 @@
 const MAX_SESSIONS_GUEST = 3;
 const MAX_SESSIONS_LOGGED = 6;
 const CLERK_PUBLISHABLE_KEY = 'pk_live_Y2xlcmsuYWZ0ZXJjYWxsLnRlY2gk';
-const MAX_SECONDS = 300;
+function getMaxSeconds() { return isPremium() ? 1800 : 300; }
 let selectedMode = 'top5';
 let isRecording = false;
 let mediaRecorder = null;
@@ -1566,6 +1576,7 @@ async function startRecording() {
   mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
   mediaRecorder.start(1000);
   isRecording = true; elapsed = 0;
+  const sessionMax = getMaxSeconds();
   document.getElementById('btn-record').classList.add('recording');
   document.getElementById('btn-stop').classList.add('visible');
   document.getElementById('waveform').classList.add('active');
@@ -1575,14 +1586,14 @@ async function startRecording() {
     const m = Math.floor(elapsed/60), s = elapsed%60;
     document.getElementById('timer').textContent = m+':'+String(s).padStart(2,'0');
     document.getElementById('timer').classList.add('active');
-    const pct = Math.min((elapsed/MAX_SECONDS)*100,100);
+    const pct = Math.min((elapsed/sessionMax)*100,100);
     const fill = document.getElementById('limit-fill');
     fill.style.width = pct+'%';
     fill.className = 'limit-bar-fill'+(pct>90?' danger':pct>70?' warn':'');
-    const rem = MAX_SECONDS-elapsed;
+    const rem = sessionMax-elapsed;
     document.getElementById('limit-label').textContent = Math.floor(rem/60)+':'+String(rem%60).padStart(2,'0')+' left';
     updateRing(pct);
-    if (elapsed>=MAX_SECONDS) stopRecording();
+    if (elapsed>=sessionMax) stopRecording();
   }, 1000);
 }
 
@@ -1606,7 +1617,12 @@ async function stopRecording() {
     const ext = mimeType.includes('mp4')?'mp4':mimeType.includes('ogg')?'ogg':'webm';
     const formData = new FormData();
     formData.append('audio',audioBlob,'recording.'+ext);
-    const response = await fetch('/api/transcribe',{method:'POST',body:formData});
+    const transcribeHeaders = {};
+    if (isLoggedIn()) {
+      const token = await window.Clerk.session.getToken();
+      if (token) transcribeHeaders['Authorization'] = `Bearer ${token}`;
+    }
+    const response = await fetch('/api/transcribe',{method:'POST',headers:transcribeHeaders,body:formData});
     const data = await response.json();
     document.getElementById('transcribing-badge').classList.remove('visible');
     if (data.text && data.text.trim().length>0) {
@@ -1757,7 +1773,24 @@ function launchConfetti() {
 // FIX: usa dataset invece di parametri onclick per evitare problemi con apostrofi
 function renderResults(corrections, modeName) {
   document.getElementById('results-mode-tag').textContent = modeName;
-  
+
+  const weights = { grammar: 15, natural: 10 };
+  const penalty = corrections.reduce((sum, c) => sum + (weights[c.category] || 5), 0);
+  const score = Math.max(20, 100 - penalty);
+  const msgs = score >= 85
+    ? 'Great session! Keep it up'
+    : score >= 70
+    ? 'Good progress — a few things to polish'
+    : score >= 55
+    ? 'Room to grow — review these carefully'
+    : 'Tough session — but that\'s how you improve';
+  document.getElementById('score-value').innerHTML = `${score} <span>/ 100</span>`;
+  document.getElementById('score-msg').textContent = msgs;
+  document.getElementById('score-banner').classList.add('visible');
+  setTimeout(() => {
+    document.getElementById('score-bar-fill').style.width = score + '%';
+  }, 100);
+
   launchConfetti();
   const list = document.getElementById('corrections-list');
   list.innerHTML = '';
@@ -1817,16 +1850,21 @@ async function tellMeMore(btn) {
   }
   btn.classList.add('loading');
   try {
+    const explainHeaders = { 'Content-Type': 'application/json' };
+    if (isLoggedIn()) {
+      const token = await window.Clerk.session.getToken();
+      if (token) explainHeaders['Authorization'] = `Bearer ${token}`;
+    }
     const response = await fetch('/api/explain', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-     body: JSON.stringify({
+      headers: explainHeaders,
+      body: JSON.stringify({
         original: btn.dataset.original,
         corrected: btn.dataset.corrected,
         explanation: btn.dataset.explanation,
         category: btn.dataset.category,
         mode: selectedMode
-      }) 
+      })
     });
     const data = await response.json();
     if (data.text) {
@@ -1872,11 +1910,13 @@ function newSession() {
   document.getElementById('timer').textContent='0:00';
   document.getElementById('timer').classList.remove('active');
   document.getElementById('limit-fill').style.width='0%';
-  document.getElementById('limit-label').textContent='5:00 free';
+  document.getElementById('limit-label').textContent=isPremium()?'30:00 premium':'5:00 free';
   document.getElementById('transcript-box').textContent='';
   document.getElementById('transcript-section').classList.remove('visible');
   document.getElementById('step-analyse').style.display='none';
   document.getElementById('results-section').classList.remove('visible');
+  document.getElementById('score-banner').classList.remove('visible');
+  document.getElementById('score-bar-fill').style.width = '0%';
 
   document.getElementById('error-box').classList.remove('visible');
   document.getElementById('loading-state').classList.remove('visible');

@@ -1,5 +1,10 @@
 import OpenAI from 'openai';
 import { toFile } from 'openai';
+import { createClerkClient } from '@clerk/backend';
+import { checkRateLimit } from './_rateLimit.js';
+
+const clerk = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
+const MAX_FREE_SESSIONS = 6;
 
 export const config = {
   api: {
@@ -15,6 +20,30 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
+
+  const authHeader = req.headers['authorization'];
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Authentication required' });
+  }
+  let userIsPremium = false;
+  let userId = null;
+  try {
+    const token = authHeader.slice(7);
+    const payload = await clerk.verifyToken(token);
+    userId = payload.sub;
+    const clerkUser = await clerk.users.getUser(userId);
+    userIsPremium = clerkUser.publicMetadata?.premium === true;
+    if (!userIsPremium) {
+      const sessionCount = clerkUser.privateMetadata?.sessionCount || 0;
+      if (sessionCount >= MAX_FREE_SESSIONS) {
+        return res.status(403).json({ error: 'Session limit reached' });
+      }
+    }
+  } catch {
+    return res.status(401).json({ error: 'Invalid session token' });
+  }
+  const allowed = await checkRateLimit(userId, 'transcribe', 10, 3600);
+  if (!allowed) return res.status(429).json({ error: 'Too many requests. Please slow down.' });
 
   try {
     const chunks = [];
@@ -59,6 +88,14 @@ export default async function handler(req, res) {
 
     if (!audioBuffer || audioBuffer.length < 100) {
       return res.status(400).json({ error: 'No audio data received or file too small' });
+    }
+
+    const maxBytes = userIsPremium ? 25 * 1024 * 1024 : 8 * 1024 * 1024;
+    if (audioBuffer.length > maxBytes) {
+      const msg = userIsPremium
+        ? 'Audio file too large (max 25MB)'
+        : 'Recording too long. Free users are limited to 5 minutes.';
+      return res.status(413).json({ error: msg });
     }
 
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });

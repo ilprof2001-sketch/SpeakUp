@@ -5,6 +5,7 @@
   "dependencies": {
     "openai": "^4.0.0",
     "stripe": "^14.0.0",
-    "@clerk/backend": "^1.0.0"
+    "@clerk/backend": "^1.0.0",
+    "@vercel/kv": "^3.0.0"
   }
 }
