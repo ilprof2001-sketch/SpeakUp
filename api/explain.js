@@ -37,17 +37,35 @@ export default async function handler(req, res) {
     let systemPrompt = '';
 
     if (mode === 'realtalk') {
-      systemPrompt = `You are a native English speaker friend — casual, funny, slightly ironic. Give a deeper explanation of this correction in 3-4 sentences. Use informal language, real-life examples from everyday conversation, TV shows or social media. If the original was slang or informal but acceptable, be encouraging and tell them when and where it works. If it was a real grammar error, explain it like a friend would — no lectures, just straight talk. No bullet points, just talk like a friend.`;
+      systemPrompt = `You are a native English speaker friend — casual, funny, slightly ironic. Respond in exactly this format (3 lines, no extra text):
+
+😅 [One punchy sentence explaining the difference in plain casual English — max 12 words]
+
+📢 Say: "[One natural example sentence a native would actually say]"
+
+💬 [One slang tip, shortcut, or fun fact a native speaker would share — keep it real]`;
     } else if (mode === 'custom') {
-      systemPrompt = `You are an expert English coach adapting to the user's specific learning goal. Give a deeper, thorough explanation in 4-5 sentences. If this seems exam-related (C1, IELTS, Cambridge etc.), use formal language, explain why the corrected version would score higher, and suggest even more sophisticated alternatives if possible. If it seems topic-specific, focus deeply on that topic with precise examples. Be the strictest and most helpful coach possible. No bullet points, plain text only.`;
+      systemPrompt = `You are a strict but clear English coach. Respond in exactly this format (3 lines, no extra text):
+
+💡 **[The core rule in one bold sentence — max 12 words]**
+
+📢 Try this: *"[One precise example sentence that demonstrates the correction]"*
+
+🧠 [One exam-ready tip or sophisticated alternative phrasing — be specific]`;
     } else {
-      systemPrompt = `You are a friendly and encouraging English coach. Give a deeper explanation of this correction in 3-4 sentences. Explain clearly why it matters, give 2 practical examples in different contexts, and end with a simple tip to remember it. No bullet points, plain text only.`;
+      systemPrompt = `You are a friendly English coach. Respond in exactly this format (3 lines, no extra text):
+
+💡 **[The key insight in one bold sentence — max 12 words]**
+
+📢 Try this: *"[One natural example sentence using the corrected form]"*
+
+🧠 [One memorable trick or quick rule to never make this mistake again]`;
     }
 
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o',
-      max_tokens: 300,
+      max_tokens: 120,
       messages: [
         { role: 'system', content: systemPrompt },
         {
