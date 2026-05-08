@@ -1724,6 +1724,8 @@ function showLoginModal() {
   mountEl.innerHTML = '';
   if (window.Clerk && window.Clerk.mountSignIn) {
     window.Clerk.mountSignIn(mountEl);
+  } else {
+    mountEl.innerHTML = '<p style="text-align:center;color:#555;font-size:14px;padding:16px 0;">Loading sign-in… <br><br>If this takes too long, <a href="javascript:location.reload()" style="color:#6c47ff;font-weight:600;">refresh the page</a> and try again.</p>';
   }
 }
 
