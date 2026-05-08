@@ -33,7 +33,8 @@ export default async function handler(req, res) {
         const payload = await clerk.verifyToken(token);
         userId = payload.sub;
         clerkUser = await clerk.users.getUser(userId);
-      } catch {
+      } catch (tokenErr) {
+        console.error('Clerk token verification failed:', tokenErr?.message || tokenErr);
         return res.status(401).json({ error: 'Invalid session token' });
       }
       const isPremium = clerkUser.publicMetadata?.premium === true;

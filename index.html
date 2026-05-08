@@ -1671,6 +1671,12 @@ async function analyse() {
     }
     const response = await fetch('/api/analyse',{method:'POST',headers,body:JSON.stringify({text,mode:selectedMode,customFocus})});
     clearInterval(loadTick);
+    if (response.status === 401) {
+      document.getElementById('loading-state').classList.remove('visible');
+      document.getElementById('step-analyse').style.display = 'block';
+      showLoginModal();
+      return;
+    }
     if (response.status === 403) {
       document.getElementById('loading-state').classList.remove('visible');
       document.getElementById('step-analyse').style.display = 'block';
