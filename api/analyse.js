@@ -1,5 +1,5 @@
 import OpenAI from 'openai';
-import { createClerkClient } from '@clerk/backend';
+import { createClerkClient, verifyToken } from '@clerk/backend';
 import { checkRateLimit } from './_rateLimit.js';
 
 const clerk = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
@@ -30,7 +30,7 @@ export default async function handler(req, res) {
     if (authHeader && authHeader.startsWith('Bearer ')) {
       const token = authHeader.slice(7);
       try {
-        const payload = await clerk.verifyToken(token);
+        const payload = await verifyToken(token, { secretKey: process.env.CLERK_SECRET_KEY });
         userId = payload.sub;
         clerkUser = await clerk.users.getUser(userId);
       } catch (tokenErr) {
