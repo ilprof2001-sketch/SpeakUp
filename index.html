@@ -1503,7 +1503,7 @@ function updateBadge() {
   const remaining = Math.max(0, max - sessions);
   const badge = document.getElementById('session-badge');
   if (isPremium()) { badge.textContent = 'Premium ✦'; badge.className = 'session-badge'; return; }
-  if (remaining === 0) { badge.textContent = 'Upgrade to Premium'; badge.className = 'session-badge out'; }
+  if (remaining === 0) { badge.textContent = 'Upgrade to Premium'; badge.className = 'session-badge out'; badge.style.cursor = 'pointer'; badge.onclick = () => { isLoggedIn() ? document.getElementById('paywall-overlay').classList.add('visible') : showLoginModal(); }; }
   else if (remaining === 1) { badge.textContent = '1 session left'; badge.className = 'session-badge warn'; }
   else { badge.textContent = remaining + ' sessions left'; badge.className = 'session-badge'; }
 }
