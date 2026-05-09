@@ -1955,12 +1955,23 @@ function drawShareCard(original, corrected, explanation, category) {
   ctx.fillStyle = 'rgba(255,255,255,0.15)';
   ctx.fillRect(72, 110, W - 144, 1);
 
-  // ── Original — medium, faded, centered, strikethrough ──
-  ctx.font = '400 52px "Plus Jakarta Sans", system-ui, sans-serif';
-  ctx.fillStyle = 'rgba(255,255,255,0.45)';
+  // ── Calculate vertical centering ──
+  const origFont = '400 52px "Plus Jakarta Sans", system-ui, sans-serif';
+  const corrFont = 'bold 88px "Plus Jakarta Sans", system-ui, sans-serif';
+  ctx.font = origFont;
+  const origLineCount = Math.max(1, Math.ceil(ctx.measureText(original).width / (W - 200)));
+  ctx.font = corrFont;
+  const corrLineCount = Math.max(1, Math.ceil(ctx.measureText(corrected).width / (W - 160)));
+  const totalContentH = origLineCount * 64 + 80 + 20 + corrLineCount * 104 + 80 + 44 + 40;
+  const usableStart = 130, usableEnd = H - 80;
+  const startY = Math.max(usableStart + 60, usableStart + (usableEnd - usableStart - totalContentH) / 2);
+
+  // ── Original — faded, centered, strikethrough ──
+  ctx.font = origFont;
+  ctx.fillStyle = 'rgba(255,255,255,0.65)';
   ctx.textAlign = 'center';
-  const origLines = wrapTextCanvasCentered(ctx, original, W/2, 240, W - 200, 64);
-  ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+  const origLines = wrapTextCanvasCentered(ctx, original, W/2, startY + 52, W - 200, 64);
+  ctx.strokeStyle = 'rgba(255,255,255,0.6)';
   ctx.lineWidth = 2.5;
   origLines.forEach(l => {
     ctx.beginPath();
@@ -1972,32 +1983,32 @@ function drawShareCard(original, corrected, explanation, category) {
 
   // ── Arrow ──
   ctx.font = '300 52px system-ui';
-  ctx.fillStyle = 'rgba(255,255,255,0.3)';
+  ctx.fillStyle = 'rgba(255,255,255,0.35)';
   ctx.textAlign = 'center';
-  ctx.fillText('↓', W/2, origBottom + 80);
+  ctx.fillText('↓', W/2, origBottom + 72);
 
   // ── Corrected — HUGE, white, bold, centered — the hero ──
-  ctx.font = 'bold 88px "Plus Jakarta Sans", system-ui, sans-serif';
+  ctx.font = corrFont;
   ctx.fillStyle = '#ffffff';
   ctx.textAlign = 'center';
-  const corrLines = wrapTextCanvasCentered(ctx, corrected, W/2, origBottom + 180, W - 160, 104);
+  const corrLines = wrapTextCanvasCentered(ctx, corrected, W/2, origBottom + 160, W - 160, 104);
   const corrBottom = corrLines[corrLines.length - 1].y;
 
-  // ── Thin divider before tagline ──
+  // ── Thin divider ──
   ctx.fillStyle = 'rgba(255,255,255,0.15)';
-  ctx.fillRect(72, corrBottom + 60, W - 144, 1);
+  ctx.fillRect(72, corrBottom + 52, W - 144, 1);
 
   // ── Tagline ──
-  ctx.font = 'italic 36px "Plus Jakarta Sans", Georgia, serif';
+  ctx.font = 'italic 34px "Plus Jakarta Sans", Georgia, serif';
   ctx.fillStyle = 'rgba(255,255,255,0.6)';
   ctx.textAlign = 'center';
-  ctx.fillText('The honest feedback nobody gives you.', W/2, corrBottom + 110);
+  ctx.fillText('The honest feedback nobody gives you.', W/2, corrBottom + 100);
 
   // ── aftercall.tech footer ──
-  ctx.font = '600 28px "Plus Jakarta Sans", system-ui, sans-serif';
-  ctx.fillStyle = 'rgba(255,255,255,0.3)';
+  ctx.font = '600 26px "Plus Jakarta Sans", system-ui, sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.28)';
   ctx.textAlign = 'center';
-  ctx.fillText('aftercall.tech', W/2, H - 52);
+  ctx.fillText('aftercall.tech', W/2, H - 48);
   ctx.textAlign = 'left';
 }
 
