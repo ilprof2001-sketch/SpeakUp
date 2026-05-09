@@ -1485,16 +1485,6 @@
       <div class="results-title" id="results-title">Your corrections</div>
       <div class="results-mode-tag" id="results-mode-tag">Top 5</div>
     </div>
-    <div class="score-banner" id="score-banner">
-      <div class="score-left">
-        <div class="score-label">Session score</div>
-        <div class="score-value" id="score-value">— <span>/ 100</span></div>
-      </div>
-      <div class="score-right">
-        <div class="score-bar-wrap"><div class="score-bar-fill" id="score-bar-fill"></div></div>
-        <div class="score-msg" id="score-msg"></div>
-      </div>
-    </div>
     <div id="corrections-list"></div>
     <button class="btn-new-session" onclick="newSession()">↩ New session</button>
   </div>
@@ -1838,24 +1828,6 @@ function renderResults(corrections, modeName, text) {
   const n = corrections.length;
   document.getElementById('results-title').textContent = n === 1 ? 'Your 1 correction' : `Your ${n} corrections`;
 
-  const wordCount = (text || '').trim().split(/\s+/).filter(Boolean).length || 10;
-  const lengthFactor = Math.max(0.3, Math.min(1.0, 30 / wordCount));
-  const penaltyWeights = { grammar: 25, natural: 15, simplicity: 10, improvement: 8, custom: 10, realtalk: 6 };
-  const penalty = corrections.reduce((sum, c) => sum + (penaltyWeights[c.category] || 10), 0) * lengthFactor;
-  const score = Math.round(Math.max(20, 100 - penalty));
-  const msgs = score >= 85
-    ? 'Great session! Keep it up'
-    : score >= 70
-    ? 'Good progress — a few things to polish'
-    : score >= 55
-    ? 'Room to grow — review these carefully'
-    : 'Tough session — but that\'s how you improve';
-  document.getElementById('score-value').innerHTML = `${score} <span>/ 100</span>`;
-  document.getElementById('score-msg').textContent = msgs;
-  document.getElementById('score-banner').classList.add('visible');
-  setTimeout(() => {
-    document.getElementById('score-bar-fill').style.width = score + '%';
-  }, 100);
 
   launchConfetti();
   const list = document.getElementById('corrections-list');
@@ -1966,7 +1938,7 @@ function wrapTextCanvas(ctx, text, x, y, maxWidth, lineHeight) {
   return lines;
 }
 
-function drawShareCard(original, corrected, explanation, category, score) {
+function drawShareCard(original, corrected, explanation, category) {
   const canvas = document.getElementById('share-canvas');
   const ctx = canvas.getContext('2d');
   const W = 1080, H = 1080;
@@ -1986,17 +1958,15 @@ function drawShareCard(original, corrected, explanation, category, score) {
   ctx.fillStyle = glow;
   ctx.fillRect(0, 0, W, H);
 
-  // Score watermark (concentric circles)
-  if (score) {
-    const cx = W/2, cy = H/2;
-    [300, 420, 520].forEach((r, i) => {
-      ctx.beginPath();
-      ctx.arc(cx, cy, r, 0, Math.PI * 2);
-      ctx.strokeStyle = `rgba(108,71,255,${0.06 - i * 0.015})`;
-      ctx.lineWidth = 1;
-      ctx.stroke();
-    });
-  }
+  // Decorative circles
+  const cx = W/2, cy = H/2;
+  [320, 460, 580].forEach((r, i) => {
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.strokeStyle = `rgba(108,71,255,${0.05 - i * 0.012})`;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  });
 
   // Top bar: Aftercall + category badge
   ctx.font = 'bold 52px "Plus Jakarta Sans", system-ui, sans-serif';
@@ -2026,17 +1996,10 @@ function drawShareCard(original, corrected, explanation, category, score) {
   ctx.fillStyle = 'rgba(255,255,255,0.07)';
   ctx.fillRect(80, 136, W-160, 1);
 
-  // Score line
-  if (score) {
-    ctx.font = '500 30px "Plus Jakarta Sans", system-ui, sans-serif';
-    ctx.fillStyle = 'rgba(255,255,255,0.3)';
-    ctx.fillText(`Score: ${score}/100`, 80, 196);
-  }
-
   // Original (red, strikethrough)
-  ctx.font = '400 50px "Plus Jakarta Sans", system-ui, sans-serif';
-  ctx.fillStyle = 'rgba(248,113,113,0.75)';
-  const origLines = wrapTextCanvas(ctx, `"${original}"`, 80, 280, W-160, 62);
+  ctx.font = '400 54px "Plus Jakarta Sans", system-ui, sans-serif';
+  ctx.fillStyle = 'rgba(248,113,113,0.8)';
+  const origLines = wrapTextCanvas(ctx, `"${original}"`, 80, 260, W-160, 68);
   ctx.strokeStyle = 'rgba(248,113,113,0.6)';
   ctx.lineWidth = 2.5;
   origLines.forEach(l => {
@@ -2079,9 +2042,7 @@ function drawShareCard(original, corrected, explanation, category, score) {
 
 async function shareCard(original, corrected, explanation, category) {
   await document.fonts.ready;
-  const scoreEl = document.getElementById('score-value');
-  const score = scoreEl ? parseInt(scoreEl.textContent) || null : null;
-  drawShareCard(original, corrected, explanation, category, score);
+  drawShareCard(original, corrected, explanation, category);
   const canvas = document.getElementById('share-canvas');
   const dataUrl = canvas.toDataURL('image/png');
 
@@ -2135,8 +2096,6 @@ function newSession() {
   document.getElementById('transcript-section').classList.remove('visible');
   document.getElementById('step-analyse').style.display='none';
   document.getElementById('results-section').classList.remove('visible');
-  document.getElementById('score-banner').classList.remove('visible');
-  document.getElementById('score-bar-fill').style.width = '0%';
 
   document.getElementById('error-box').classList.remove('visible');
   document.getElementById('loading-state').classList.remove('visible');
