@@ -1,8 +1,10 @@
 import OpenAI from 'openai';
-import { createClerkClient, verifyToken } from '@clerk/backend';
+import { createClerkClient } from '@clerk/backend';
+import { createRemoteJWKSet, jwtVerify } from 'jose';
 import { checkRateLimit } from './_rateLimit.js';
 
 const clerk = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
+const JWKS = createRemoteJWKSet(new URL('https://clerk.aftercall.tech/.well-known/jwks.json'));
 const MAX_FREE_SESSIONS = 6;
 
 export const config = {
@@ -30,7 +32,7 @@ export default async function handler(req, res) {
     if (authHeader && authHeader.startsWith('Bearer ')) {
       const token = authHeader.slice(7);
       try {
-        const payload = await verifyToken(token, { secretKey: process.env.CLERK_SECRET_KEY });
+        const { payload } = await jwtVerify(token, JWKS);
         userId = payload.sub;
         clerkUser = await clerk.users.getUser(userId);
       } catch (tokenErr) {
