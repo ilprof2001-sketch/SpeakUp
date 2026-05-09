@@ -1027,27 +1027,6 @@
   }
   .error-box.visible { display: block; }
 
-  .confetti-wrap {
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    height: 0;
-    overflow: visible;
-    pointer-events: none;
-    z-index: 200;
-  }
-  .confetti-piece {
-    position: absolute;
-    width: 8px; height: 8px;
-    border-radius: 2px;
-    opacity: 0;
-    animation: confettiFall 1.8s ease forwards;
-  }
-  @keyframes confettiFall {
-    0% { opacity: 1; transform: translateY(0) rotate(0deg) scale(1); }
-    80% { opacity: 1; }
-    100% { opacity: 0; transform: translateY(400px) rotate(720deg) scale(0.5); }
-  }
-
   .paywall-overlay {
     display: none;
     position: fixed;
@@ -1248,7 +1227,6 @@
 </head>
 <body>
 
-<div class="confetti-wrap" id="confetti-wrap"></div>
 <div id="share-canvas-wrap"><canvas id="share-canvas" width="1080" height="1080"></canvas></div>
 <div id="session-banner" style="display:none; position:fixed; bottom:0; left:0; right:0; background:#1a1b2e; color:white; padding:12px 20px; align-items:center; justify-content:space-between; z-index:50; font-size:13px;">
   <span id="session-banner-text">You have 2 sessions left</span>
@@ -1805,23 +1783,6 @@ function handleUpgrade() { window.open('https://buy.stripe.com/5kQbJ18OZ1BAa5ic8
 
 
 
-function launchConfetti() {
-  const wrap = document.getElementById('confetti-wrap');
-  wrap.innerHTML = '';
-  const colors = ['#6c47ff','#a78bfa','#10b981','#f59e0b','#ef4444','#3b82f6'];
-  for (let i = 0; i < 40; i++) {
-    const el = document.createElement('div');
-    el.className = 'confetti-piece';
-    el.style.left = (10 + Math.random() * 80) + '%';
-    el.style.top = '0px';
-    el.style.background = colors[Math.floor(Math.random() * colors.length)];
-    el.style.animationDelay = (Math.random() * 0.6) + 's';
-    el.style.animationDuration = (1.2 + Math.random() * 0.8) + 's';
-    wrap.appendChild(el);
-  }
-  setTimeout(() => { wrap.innerHTML = ''; }, 2500);
-}
-
 // FIX: usa dataset invece di parametri onclick per evitare problemi con apostrofi
 function renderResults(corrections, modeName, text) {
   document.getElementById('results-mode-tag').textContent = modeName;
@@ -1829,7 +1790,6 @@ function renderResults(corrections, modeName, text) {
   document.getElementById('results-title').textContent = n === 1 ? 'Your 1 correction' : `Your ${n} corrections`;
 
 
-  launchConfetti();
   const list = document.getElementById('corrections-list');
   list.innerHTML = '';
   corrections.slice(0,5).forEach((c,i) => {
@@ -1944,178 +1904,109 @@ function drawShareCard(original, corrected, explanation, category) {
   const W = 1080, H = 1080;
   ctx.clearRect(0, 0, W, H);
 
-  const rr = (x, y, w, h, r) => {
-    ctx.beginPath();
-    if (ctx.roundRect) { ctx.roundRect(x, y, w, h, r); }
-    else { ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y); ctx.arcTo(x+w,y,x+w,y+r,r); ctx.lineTo(x+w,y+h-r); ctx.arcTo(x+w,y+h,x+w-r,y+h,r); ctx.lineTo(x+r,y+h); ctx.arcTo(x,y+h,x,y+h-r,r); ctx.lineTo(x,y+r); ctx.arcTo(x,y,x+r,y,r); ctx.closePath(); }
-  };
-
   const catLabels = { grammar:'Grammar', natural:'Natural', simplicity:'Simplicity', improvement:'Improvement', custom:'Focus on…', realtalk:'Real Talk' };
-  const catColors = { grammar:'#3b82f6', natural:'#10b981', simplicity:'#8b5cf6', improvement:'#f59e0b', custom:'#ec4899', realtalk:'#ef4444' };
-  const catHP     = { grammar:75, natural:90, simplicity:60, improvement:80, custom:100, realtalk:50 };
-  const catLabel  = catLabels[category] || category;
-  const catColor  = catColors[category] || '#6c47ff';
-  const hp        = catHP[category] || 75;
+  const catLabel = catLabels[category] || category;
 
-  // ── Outer background ──
-  ctx.fillStyle = '#0a0218';
+  // ── Bold gradient background (Spotify Wrapped style) ──
+  const grad = ctx.createLinearGradient(0, 0, W, H);
+  grad.addColorStop(0,   '#1a0060');
+  grad.addColorStop(0.45,'#6c47ff');
+  grad.addColorStop(1,   '#c026d3');
+  ctx.fillStyle = grad;
   ctx.fillRect(0, 0, W, H);
 
-  // Card bounds
-  const CX=50, CY=20, CW=980, CH=1040, CR=28;
+  // Soft radial highlight top-right
+  const glow = ctx.createRadialGradient(W, 0, 0, W, 0, 800);
+  glow.addColorStop(0, 'rgba(255,255,255,0.12)');
+  glow.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = glow;
+  ctx.fillRect(0, 0, W, H);
 
-  // Card gradient background (light purple holographic)
-  const cardGrad = ctx.createLinearGradient(CX, CY, CX+CW, CY+CH);
-  cardGrad.addColorStop(0, '#ede9fe');
-  cardGrad.addColorStop(0.5, '#ddd6fe');
-  cardGrad.addColorStop(1, '#c4b5fd');
-  ctx.fillStyle = cardGrad;
-  rr(CX, CY, CW, CH, CR); ctx.fill();
-
-  // Gold outer border
-  ctx.strokeStyle = '#d4a017';
-  ctx.lineWidth = 20;
-  rr(CX, CY, CW, CH, CR); ctx.stroke();
-
-  // Inner thin dark border
-  ctx.strokeStyle = 'rgba(0,0,0,0.18)';
-  ctx.lineWidth = 2.5;
-  rr(CX+22, CY+22, CW-44, CH-44, CR-8); ctx.stroke();
-
-  // ── TOP STRIP: BASIC + Name + HP + type circle ──
-  ctx.font = 'bold 22px "Plus Jakarta Sans", system-ui, sans-serif';
-  ctx.fillStyle = 'rgba(0,0,0,0.3)';
+  // ── Aftercall top left ──
+  ctx.font = 'bold 44px "Plus Jakarta Sans", system-ui, sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.9)';
   ctx.textAlign = 'left';
-  ctx.fillText('BASIC', CX+44, CY+56);
+  ctx.fillText('Aftercall', 72, 86);
 
-  ctx.font = 'bold 56px "Plus Jakarta Sans", system-ui, sans-serif';
-  ctx.fillStyle = '#1a0a3a';
-  ctx.fillText('English Learner', CX+44, CY+108);
-
-  // HP
-  ctx.font = '500 28px "Plus Jakarta Sans", system-ui, sans-serif';
-  ctx.fillStyle = 'rgba(0,0,0,0.45)';
-  ctx.textAlign = 'right';
-  ctx.fillText('HP', CX+CW-100, CY+104);
-  ctx.font = 'bold 56px "Plus Jakarta Sans", system-ui, sans-serif';
-  ctx.fillStyle = '#dc2626';
-  ctx.fillText(hp, CX+CW-44, CY+108);
-
-  // Type circle
-  ctx.fillStyle = catColor;
-  ctx.beginPath(); ctx.arc(CX+CW-38, CY+44, 22, 0, Math.PI*2); ctx.fill();
-  ctx.font = 'bold 18px system-ui';
+  // ── Category pill top right ──
+  ctx.font = 'bold 26px "Plus Jakarta Sans", system-ui, sans-serif';
+  const bw = ctx.measureText(catLabel).width + 48;
+  const bx = W - 72 - bw, by = 50;
+  ctx.fillStyle = 'rgba(255,255,255,0.18)';
+  ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  if (ctx.roundRect) ctx.roundRect(bx, by, bw, 42, 21);
+  else ctx.rect(bx, by, bw, 42);
+  ctx.fill(); ctx.stroke();
   ctx.fillStyle = '#fff';
   ctx.textAlign = 'center';
-  ctx.fillText((catLabel[0]||'?').toUpperCase(), CX+CW-38, CY+51);
-  ctx.textAlign = 'left';
+  ctx.fillText(catLabel, bx + bw / 2, by + 29);
 
-  // ── IMAGE AREA (waveform) ──
-  const imgX=CX+30, imgY=CY+124, imgW=CW-60, imgH=280;
-  ctx.fillStyle = '#1a0850';
-  rr(imgX, imgY, imgW, imgH, 12); ctx.fill();
+  // ── Thin divider ──
+  ctx.fillStyle = 'rgba(255,255,255,0.15)';
+  ctx.fillRect(72, 110, W - 144, 1);
 
-  // Waveform bars
-  const bars = 32, barW = 18;
-  const bGap = (imgW - bars * barW) / (bars + 1);
-  const bHeights = [30,50,80,110,90,140,170,150,120,80,100,150,190,210,180,150,120,90,110,150,180,160,120,90,70,100,130,110,80,60,80,45];
-  ctx.fillStyle = 'rgba(139,92,246,0.85)';
-  for (let i = 0; i < bars; i++) {
-    const bh = bHeights[i] || 60;
-    const bx = imgX + bGap * (i+1) + barW * i;
-    const by = imgY + imgH/2 - bh/2;
-    rr(bx, by, barW, bh, 5); ctx.fill();
-  }
-  ctx.font = '500 20px "Plus Jakarta Sans", system-ui, sans-serif';
-  ctx.fillStyle = 'rgba(255,255,255,0.3)';
+  // ── Original — medium, faded, centered, strikethrough ──
+  ctx.font = '400 52px "Plus Jakarta Sans", system-ui, sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.45)';
   ctx.textAlign = 'center';
-  ctx.fillText('AFTERCALL  ·  AI SPEAKING COACH', W/2, imgY + imgH - 18);
-  ctx.textAlign = 'left';
-
-  // ── ATTACK 1: original (wrong) ──
-  const A1Y = imgY + imgH + 24;
-
-  // Energy dot + label
-  ctx.fillStyle = '#dc2626';
-  ctx.beginPath(); ctx.arc(CX+56, A1Y+18, 14, 0, Math.PI*2); ctx.fill();
-  ctx.font = 'bold 14px system-ui';
-  ctx.fillStyle = '#fff';
-  ctx.textAlign = 'center';
-  ctx.fillText('✕', CX+56, A1Y+23);
-  ctx.textAlign = 'left';
-
-  ctx.font = 'bold 24px "Plus Jakarta Sans", system-ui, sans-serif';
-  ctx.fillStyle = 'rgba(0,0,0,0.35)';
-  ctx.fillText('Wrong move', CX+82, A1Y+24);
-
-  ctx.font = 'bold 22px "Plus Jakarta Sans", system-ui, sans-serif';
-  ctx.fillStyle = '#dc2626';
-  ctx.textAlign = 'right';
-  ctx.fillText('−30', CX+CW-44, A1Y+24);
-  ctx.textAlign = 'left';
-
-  ctx.font = 'italic 46px "Plus Jakarta Sans", system-ui, sans-serif';
-  ctx.fillStyle = '#7f1d1d';
-  const origLines = wrapTextCanvas(ctx, `"${original}"`, CX+44, A1Y+78, CW-88, 56);
-  ctx.strokeStyle = '#dc2626';
+  const origLines = wrapTextCanvasCentered(ctx, original, W/2, 240, W - 200, 64);
+  ctx.strokeStyle = 'rgba(255,255,255,0.4)';
   ctx.lineWidth = 2.5;
   origLines.forEach(l => {
-    const w = ctx.measureText(l.text).width;
-    ctx.beginPath(); ctx.moveTo(CX+44, l.y-14); ctx.lineTo(CX+44+w, l.y-14); ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(W/2 - l.w/2, l.y - 16);
+    ctx.lineTo(W/2 + l.w/2, l.y - 16);
+    ctx.stroke();
   });
-  const origBottom = origLines[origLines.length-1].y;
+  const origBottom = origLines[origLines.length - 1].y;
 
-  // Divider between attacks
-  ctx.fillStyle = 'rgba(0,0,0,0.1)';
-  ctx.fillRect(CX+44, origBottom+22, CW-88, 1.5);
-
-  // ── ATTACK 2: corrected ──
-  const A2Y = origBottom + 36;
-
-  // Energy dot
-  ctx.fillStyle = '#16a34a';
-  ctx.beginPath(); ctx.arc(CX+56, A2Y+18, 14, 0, Math.PI*2); ctx.fill();
-  ctx.font = 'bold 14px system-ui';
-  ctx.fillStyle = '#fff';
+  // ── Arrow ──
+  ctx.font = '300 52px system-ui';
+  ctx.fillStyle = 'rgba(255,255,255,0.3)';
   ctx.textAlign = 'center';
-  ctx.fillText('✓', CX+56, A2Y+23);
+  ctx.fillText('↓', W/2, origBottom + 80);
+
+  // ── Corrected — HUGE, white, bold, centered — the hero ──
+  ctx.font = 'bold 88px "Plus Jakarta Sans", system-ui, sans-serif';
+  ctx.fillStyle = '#ffffff';
+  ctx.textAlign = 'center';
+  const corrLines = wrapTextCanvasCentered(ctx, corrected, W/2, origBottom + 180, W - 160, 104);
+  const corrBottom = corrLines[corrLines.length - 1].y;
+
+  // ── Thin divider before tagline ──
+  ctx.fillStyle = 'rgba(255,255,255,0.15)';
+  ctx.fillRect(72, corrBottom + 60, W - 144, 1);
+
+  // ── Tagline ──
+  ctx.font = 'italic 36px "Plus Jakarta Sans", Georgia, serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.6)';
+  ctx.textAlign = 'center';
+  ctx.fillText('The honest feedback nobody gives you.', W/2, corrBottom + 110);
+
+  // ── aftercall.tech footer ──
+  ctx.font = '600 28px "Plus Jakarta Sans", system-ui, sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.3)';
+  ctx.textAlign = 'center';
+  ctx.fillText('aftercall.tech', W/2, H - 52);
   ctx.textAlign = 'left';
+}
 
-  ctx.font = 'bold 24px "Plus Jakarta Sans", system-ui, sans-serif';
-  ctx.fillStyle = 'rgba(0,0,0,0.35)';
-  ctx.fillText('Correct move', CX+82, A2Y+24);
-
-  ctx.font = 'bold 22px "Plus Jakarta Sans", system-ui, sans-serif';
-  ctx.fillStyle = '#16a34a';
-  ctx.textAlign = 'right';
-  ctx.fillText('+100', CX+CW-44, A2Y+24);
-  ctx.textAlign = 'left';
-
-  ctx.font = 'bold 52px "Plus Jakarta Sans", system-ui, sans-serif';
-  ctx.fillStyle = '#14532d';
-  const corrLines = wrapTextCanvas(ctx, `"${corrected}"`, CX+44, A2Y+78, CW-88, 64);
-  const corrBottom = corrLines[corrLines.length-1].y;
-
-  // ── BOTTOM STRIP ──
-  ctx.fillStyle = 'rgba(0,0,0,0.08)';
-  ctx.fillRect(CX+30, corrBottom+28, CW-60, 1.5);
-
-  const BSY = CY + CH - 72;
-  ctx.font = '500 22px "Plus Jakarta Sans", system-ui, sans-serif';
-  ctx.fillStyle = 'rgba(0,0,0,0.35)';
-  ctx.textAlign = 'left';
-  ctx.fillText(`weakness  ×2  ${catLabel}`, CX+44, BSY);
-
-  ctx.textAlign = 'right';
-  ctx.fillText('Illus. Aftercall', CX+CW-44, BSY);
-
-  ctx.font = '600 22px "Plus Jakarta Sans", system-ui, sans-serif';
-  ctx.fillStyle = 'rgba(0,0,0,0.25)';
-  ctx.textAlign = 'left';
-  ctx.fillText('1/∞', CX+44, CY+CH-30);
-  ctx.textAlign = 'right';
-  ctx.fillText('aftercall.tech', CX+CW-44, CY+CH-30);
-  ctx.textAlign = 'left';
+function wrapTextCanvasCentered(ctx, text, cx, y, maxWidth, lineHeight) {
+  const words = text.split(' ');
+  let line = '', lines = [], curY = y;
+  for (let n = 0; n < words.length; n++) {
+    const test = line + words[n] + ' ';
+    if (ctx.measureText(test).width > maxWidth && n > 0) {
+      ctx.fillText(line.trim(), cx, curY);
+      lines.push({ text: line.trim(), y: curY, w: ctx.measureText(line.trim()).width });
+      line = words[n] + ' '; curY += lineHeight;
+    } else { line = test; }
+  }
+  ctx.fillText(line.trim(), cx, curY);
+  lines.push({ text: line.trim(), y: curY, w: ctx.measureText(line.trim()).width });
+  return lines;
 }
 
 async function shareCard(original, corrected, explanation, category) {
