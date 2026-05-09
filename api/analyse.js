@@ -60,13 +60,13 @@ export default async function handler(req, res) {
     }
 
     const prompt = `You are an English speaking coach. A non-native English speaker has spoken the following transcript.
-Your task: identify up to 5 real errors — things a native speaker would consider wrong or clearly unnatural.
+Your task: identify up to 5 real errors and assign each one the MOST ACCURATE category.
 
-CATEGORIES (pick the most accurate one per correction):
-- "grammar": structural errors (wrong tense, subject-verb agreement, missing articles, wrong preposition)
-- "vocabulary": wrong word choice, false friends, or a word that is too weak/imprecise for the context
-- "naturalness": grammatically correct but unnatural — a native speaker would never phrase it this way
-- "fluency": awkward sentence structure, unnecessary repetition, or confusing word order
+CATEGORIES — choose carefully, do NOT default to "grammar":
+- "grammar": wrong verb tense, subject-verb agreement, missing/wrong article, wrong preposition used structurally (e.g. "I have went", "she don't know")
+- "vocabulary": wrong word chosen — false friends, word confusion, or a word that doesn't mean what the speaker intended (e.g. "boring" instead of "bored", "make" instead of "do", "sympathetic" instead of "nice")
+- "naturalness": grammatically correct but no native speaker would say it — the phrasing sounds foreign or robotic (e.g. "I did a mistake" → "I made a mistake", "make me a good price" → "give me a good deal")
+- "fluency": awkward sentence structure, unnecessary repetition, or word order that makes the sentence hard to follow
 
 STRICT RULES:
 - Only correct real errors. Ask: "Would a native speaker consider this WRONG?" If no, skip it.
