@@ -1942,101 +1942,179 @@ function drawShareCard(original, corrected, explanation, category) {
   const canvas = document.getElementById('share-canvas');
   const ctx = canvas.getContext('2d');
   const W = 1080, H = 1080;
-  const SPLIT = 500;
   ctx.clearRect(0, 0, W, H);
 
-  // ── TOP HALF: dark purple ──
-  const topGrad = ctx.createLinearGradient(0, 0, W, SPLIT);
-  topGrad.addColorStop(0, '#0d0426');
-  topGrad.addColorStop(1, '#1e0a5c');
-  ctx.fillStyle = topGrad;
-  ctx.fillRect(0, 0, W, SPLIT);
+  const rr = (x, y, w, h, r) => {
+    ctx.beginPath();
+    if (ctx.roundRect) { ctx.roundRect(x, y, w, h, r); }
+    else { ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y); ctx.arcTo(x+w,y,x+w,y+r,r); ctx.lineTo(x+w,y+h-r); ctx.arcTo(x+w,y+h,x+w-r,y+h,r); ctx.lineTo(x+r,y+h); ctx.arcTo(x,y+h,x,y+h-r,r); ctx.lineTo(x,y+r); ctx.arcTo(x,y,x+r,y,r); ctx.closePath(); }
+  };
 
-  // subtle radial glow top
-  const glow = ctx.createRadialGradient(W*0.7, 0, 0, W*0.7, 0, 700);
-  glow.addColorStop(0, 'rgba(108,71,255,0.25)');
-  glow.addColorStop(1, 'rgba(108,71,255,0)');
-  ctx.fillStyle = glow;
-  ctx.fillRect(0, 0, W, SPLIT);
-
-  // Aftercall wordmark top left
-  ctx.font = 'bold 48px "Plus Jakarta Sans", system-ui, sans-serif';
-  ctx.fillStyle = 'rgba(255,255,255,0.9)';
-  ctx.textAlign = 'left';
-  ctx.fillText('Aftercall', 72, 88);
-
-  // Category badge top right (solid pill)
   const catLabels = { grammar:'Grammar', natural:'Natural', simplicity:'Simplicity', improvement:'Improvement', custom:'Focus on…', realtalk:'Real Talk' };
   const catColors = { grammar:'#3b82f6', natural:'#10b981', simplicity:'#8b5cf6', improvement:'#f59e0b', custom:'#ec4899', realtalk:'#ef4444' };
-  const catLabel = catLabels[category] || category;
-  const catColor = catColors[category] || '#6c47ff';
-  ctx.font = 'bold 24px "Plus Jakarta Sans", system-ui, sans-serif';
-  const bw = ctx.measureText(catLabel).width + 40;
-  const bx = W - 72 - bw, by = 56;
+  const catHP     = { grammar:75, natural:90, simplicity:60, improvement:80, custom:100, realtalk:50 };
+  const catLabel  = catLabels[category] || category;
+  const catColor  = catColors[category] || '#6c47ff';
+  const hp        = catHP[category] || 75;
+
+  // ── Outer background ──
+  ctx.fillStyle = '#0a0218';
+  ctx.fillRect(0, 0, W, H);
+
+  // Card bounds
+  const CX=50, CY=20, CW=980, CH=1040, CR=28;
+
+  // Card gradient background (light purple holographic)
+  const cardGrad = ctx.createLinearGradient(CX, CY, CX+CW, CY+CH);
+  cardGrad.addColorStop(0, '#ede9fe');
+  cardGrad.addColorStop(0.5, '#ddd6fe');
+  cardGrad.addColorStop(1, '#c4b5fd');
+  ctx.fillStyle = cardGrad;
+  rr(CX, CY, CW, CH, CR); ctx.fill();
+
+  // Gold outer border
+  ctx.strokeStyle = '#d4a017';
+  ctx.lineWidth = 20;
+  rr(CX, CY, CW, CH, CR); ctx.stroke();
+
+  // Inner thin dark border
+  ctx.strokeStyle = 'rgba(0,0,0,0.18)';
+  ctx.lineWidth = 2.5;
+  rr(CX+22, CY+22, CW-44, CH-44, CR-8); ctx.stroke();
+
+  // ── TOP STRIP: BASIC + Name + HP + type circle ──
+  ctx.font = 'bold 22px "Plus Jakarta Sans", system-ui, sans-serif';
+  ctx.fillStyle = 'rgba(0,0,0,0.3)';
+  ctx.textAlign = 'left';
+  ctx.fillText('BASIC', CX+44, CY+56);
+
+  ctx.font = 'bold 56px "Plus Jakarta Sans", system-ui, sans-serif';
+  ctx.fillStyle = '#1a0a3a';
+  ctx.fillText('English Learner', CX+44, CY+108);
+
+  // HP
+  ctx.font = '500 28px "Plus Jakarta Sans", system-ui, sans-serif';
+  ctx.fillStyle = 'rgba(0,0,0,0.45)';
+  ctx.textAlign = 'right';
+  ctx.fillText('HP', CX+CW-100, CY+104);
+  ctx.font = 'bold 56px "Plus Jakarta Sans", system-ui, sans-serif';
+  ctx.fillStyle = '#dc2626';
+  ctx.fillText(hp, CX+CW-44, CY+108);
+
+  // Type circle
   ctx.fillStyle = catColor;
-  ctx.beginPath();
-  if (ctx.roundRect) { ctx.roundRect(bx, by, bw, 38, 19); } else { ctx.rect(bx, by, bw, 38); }
-  ctx.fill();
+  ctx.beginPath(); ctx.arc(CX+CW-38, CY+44, 22, 0, Math.PI*2); ctx.fill();
+  ctx.font = 'bold 18px system-ui';
   ctx.fillStyle = '#fff';
   ctx.textAlign = 'center';
-  ctx.fillText(catLabel, bx + bw/2, by + 26);
+  ctx.fillText((catLabel[0]||'?').toUpperCase(), CX+CW-38, CY+51);
   ctx.textAlign = 'left';
 
-  // ❌ label
-  ctx.font = '500 26px "Plus Jakarta Sans", system-ui, sans-serif';
-  ctx.fillStyle = 'rgba(255,255,255,0.35)';
-  ctx.fillText('What you said', 72, 170);
+  // ── IMAGE AREA (waveform) ──
+  const imgX=CX+30, imgY=CY+124, imgW=CW-60, imgH=280;
+  ctx.fillStyle = '#1a0850';
+  rr(imgX, imgY, imgW, imgH, 12); ctx.fill();
 
-  // Original text — large, red, strikethrough
-  ctx.font = '500 64px "Plus Jakarta Sans", system-ui, sans-serif';
-  ctx.fillStyle = '#ff8fa3';
-  const origLines = wrapTextCanvas(ctx, original, 72, 252, W - 144, 78);
-  ctx.strokeStyle = '#ff8fa3';
-  ctx.lineWidth = 3;
+  // Waveform bars
+  const bars = 32, barW = 18;
+  const bGap = (imgW - bars * barW) / (bars + 1);
+  const bHeights = [30,50,80,110,90,140,170,150,120,80,100,150,190,210,180,150,120,90,110,150,180,160,120,90,70,100,130,110,80,60,80,45];
+  ctx.fillStyle = 'rgba(139,92,246,0.85)';
+  for (let i = 0; i < bars; i++) {
+    const bh = bHeights[i] || 60;
+    const bx = imgX + bGap * (i+1) + barW * i;
+    const by = imgY + imgH/2 - bh/2;
+    rr(bx, by, barW, bh, 5); ctx.fill();
+  }
+  ctx.font = '500 20px "Plus Jakarta Sans", system-ui, sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.3)';
+  ctx.textAlign = 'center';
+  ctx.fillText('AFTERCALL  ·  AI SPEAKING COACH', W/2, imgY + imgH - 18);
+  ctx.textAlign = 'left';
+
+  // ── ATTACK 1: original (wrong) ──
+  const A1Y = imgY + imgH + 24;
+
+  // Energy dot + label
+  ctx.fillStyle = '#dc2626';
+  ctx.beginPath(); ctx.arc(CX+56, A1Y+18, 14, 0, Math.PI*2); ctx.fill();
+  ctx.font = 'bold 14px system-ui';
+  ctx.fillStyle = '#fff';
+  ctx.textAlign = 'center';
+  ctx.fillText('✕', CX+56, A1Y+23);
+  ctx.textAlign = 'left';
+
+  ctx.font = 'bold 24px "Plus Jakarta Sans", system-ui, sans-serif';
+  ctx.fillStyle = 'rgba(0,0,0,0.35)';
+  ctx.fillText('Wrong move', CX+82, A1Y+24);
+
+  ctx.font = 'bold 22px "Plus Jakarta Sans", system-ui, sans-serif';
+  ctx.fillStyle = '#dc2626';
+  ctx.textAlign = 'right';
+  ctx.fillText('−30', CX+CW-44, A1Y+24);
+  ctx.textAlign = 'left';
+
+  ctx.font = 'italic 46px "Plus Jakarta Sans", system-ui, sans-serif';
+  ctx.fillStyle = '#7f1d1d';
+  const origLines = wrapTextCanvas(ctx, `"${original}"`, CX+44, A1Y+78, CW-88, 56);
+  ctx.strokeStyle = '#dc2626';
+  ctx.lineWidth = 2.5;
   origLines.forEach(l => {
     const w = ctx.measureText(l.text).width;
-    ctx.beginPath(); ctx.moveTo(72, l.y - 22); ctx.lineTo(72 + w, l.y - 22); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(CX+44, l.y-14); ctx.lineTo(CX+44+w, l.y-14); ctx.stroke();
   });
+  const origBottom = origLines[origLines.length-1].y;
 
-  // Diagonal cut / wave separator
-  ctx.fillStyle = '#f5f3ff';
-  ctx.beginPath();
-  ctx.moveTo(0, SPLIT - 60);
-  ctx.quadraticCurveTo(W / 2, SPLIT + 40, W, SPLIT - 60);
-  ctx.lineTo(W, H);
-  ctx.lineTo(0, H);
-  ctx.closePath();
-  ctx.fill();
+  // Divider between attacks
+  ctx.fillStyle = 'rgba(0,0,0,0.1)';
+  ctx.fillRect(CX+44, origBottom+22, CW-88, 1.5);
 
-  // ── BOTTOM HALF: near-white ──
-  ctx.fillStyle = '#f5f3ff';
-  ctx.fillRect(0, SPLIT, W, H - SPLIT);
+  // ── ATTACK 2: corrected ──
+  const A2Y = origBottom + 36;
 
-  // ✅ label
-  ctx.font = '500 26px "Plus Jakarta Sans", system-ui, sans-serif';
-  ctx.fillStyle = 'rgba(30,10,92,0.4)';
-  ctx.fillText('The right way', 72, SPLIT + 80);
+  // Energy dot
+  ctx.fillStyle = '#16a34a';
+  ctx.beginPath(); ctx.arc(CX+56, A2Y+18, 14, 0, Math.PI*2); ctx.fill();
+  ctx.font = 'bold 14px system-ui';
+  ctx.fillStyle = '#fff';
+  ctx.textAlign = 'center';
+  ctx.fillText('✓', CX+56, A2Y+23);
+  ctx.textAlign = 'left';
 
-  // Corrected text — huge, bold, dark green, hero element
-  ctx.font = 'bold 76px "Plus Jakarta Sans", system-ui, sans-serif';
-  ctx.fillStyle = '#0d7a45';
-  const corrLines = wrapTextCanvas(ctx, corrected, 72, SPLIT + 168, W - 144, 92);
-  const corrBottom = corrLines[corrLines.length - 1].y;
+  ctx.font = 'bold 24px "Plus Jakarta Sans", system-ui, sans-serif';
+  ctx.fillStyle = 'rgba(0,0,0,0.35)';
+  ctx.fillText('Correct move', CX+82, A2Y+24);
 
-  // Thin divider
-  ctx.fillStyle = 'rgba(30,10,92,0.1)';
-  ctx.fillRect(72, corrBottom + 48, W - 144, 1);
-
-  // Tagline
-  ctx.font = 'italic 36px "Plus Jakarta Sans", Georgia, serif';
-  ctx.fillStyle = 'rgba(30,10,92,0.45)';
-  ctx.fillText('The honest feedback nobody gives you.', 72, corrBottom + 102);
-
-  // Footer: aftercall.tech
-  ctx.font = '600 28px "Plus Jakarta Sans", system-ui, sans-serif';
-  ctx.fillStyle = 'rgba(30,10,92,0.25)';
+  ctx.font = 'bold 22px "Plus Jakarta Sans", system-ui, sans-serif';
+  ctx.fillStyle = '#16a34a';
   ctx.textAlign = 'right';
-  ctx.fillText('aftercall.tech', W - 72, H - 52);
+  ctx.fillText('+100', CX+CW-44, A2Y+24);
+  ctx.textAlign = 'left';
+
+  ctx.font = 'bold 52px "Plus Jakarta Sans", system-ui, sans-serif';
+  ctx.fillStyle = '#14532d';
+  const corrLines = wrapTextCanvas(ctx, `"${corrected}"`, CX+44, A2Y+78, CW-88, 64);
+  const corrBottom = corrLines[corrLines.length-1].y;
+
+  // ── BOTTOM STRIP ──
+  ctx.fillStyle = 'rgba(0,0,0,0.08)';
+  ctx.fillRect(CX+30, corrBottom+28, CW-60, 1.5);
+
+  const BSY = CY + CH - 72;
+  ctx.font = '500 22px "Plus Jakarta Sans", system-ui, sans-serif';
+  ctx.fillStyle = 'rgba(0,0,0,0.35)';
+  ctx.textAlign = 'left';
+  ctx.fillText(`weakness  ×2  ${catLabel}`, CX+44, BSY);
+
+  ctx.textAlign = 'right';
+  ctx.fillText('Illus. Aftercall', CX+CW-44, BSY);
+
+  ctx.font = '600 22px "Plus Jakarta Sans", system-ui, sans-serif';
+  ctx.fillStyle = 'rgba(0,0,0,0.25)';
+  ctx.textAlign = 'left';
+  ctx.fillText('1/∞', CX+44, CY+CH-30);
+  ctx.textAlign = 'right';
+  ctx.fillText('aftercall.tech', CX+CW-44, CY+CH-30);
   ctx.textAlign = 'left';
 }
 
