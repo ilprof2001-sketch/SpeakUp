@@ -1820,7 +1820,6 @@ function renderResults(corrections, modeName, text) {
           <span class="tell-label">Tell me more</span>
         </button>
         <span style="color:var(--border-med); margin: 0 4px;">·</span>
-        <button class="btn-copy">⎘ Copy</button>
         <span style="color:var(--border-med); margin: 0 4px;">·</span>
         <button class="btn-share">↗ Share</button>
       </div>
@@ -1835,8 +1834,6 @@ function renderResults(corrections, modeName, text) {
     btn.addEventListener('click', () => tellMeMore(btn));
     const shareBtn = card.querySelector('.btn-share');
     shareBtn.addEventListener('click', () => shareCard(c.original, c.corrected, c.explanation, c.category));
-    const copyBtn = card.querySelector('.btn-copy');
-    copyBtn.addEventListener('click', () => copyCorrection(c.original, c.corrected, copyBtn));
     list.appendChild(card);
   });
   document.getElementById('results-section').classList.add('visible');
@@ -2050,17 +2047,6 @@ async function shareCard(original, corrected, explanation, category) {
   };
 }
 
-function copyCorrection(original, corrected, btn) {
-  const text = `I said this in English 😭\n\n❌ "${original}"\n✅ "${corrected}"\n\nAftercall caught me lacking 💀\naftercall.tech`;
-  navigator.clipboard.writeText(text).then(() => {
-    btn.textContent = '✓ Copied!';
-    btn.style.color = 'var(--green)';
-    setTimeout(() => {
-      btn.textContent = '⎘ Copy';
-      btn.style.color = '';
-    }, 2000);
-  });
-}
  function showError(msg) { const el=document.getElementById('error-box'); el.textContent=msg; el.classList.add('visible'); }
 function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
