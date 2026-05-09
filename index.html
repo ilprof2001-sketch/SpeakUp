@@ -1534,12 +1534,20 @@ function selectMode(el) {
 
 function toggleManual() {
   manualVisible = !manualVisible;
-  document.getElementById('manual-textarea').classList.toggle('visible', manualVisible);
+  const ta = document.getElementById('manual-textarea');
+  ta.classList.toggle('visible', manualVisible);
   if (manualVisible) {
     document.getElementById('step-analyse').style.display = 'block';
     document.getElementById('transcript-section').classList.remove('visible');
   }
 }
+
+document.getElementById('manual-textarea').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    analyse();
+  }
+});
 
 function toggleRecord() { if (!isRecording) startRecording(); }
 
