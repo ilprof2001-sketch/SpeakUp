@@ -1942,101 +1942,101 @@ function drawShareCard(original, corrected, explanation, category) {
   const canvas = document.getElementById('share-canvas');
   const ctx = canvas.getContext('2d');
   const W = 1080, H = 1080;
+  const SPLIT = 500;
   ctx.clearRect(0, 0, W, H);
 
-  // Background: deep dark gradient
-  const grad = ctx.createLinearGradient(0, 0, W, H);
-  grad.addColorStop(0, '#0a0520');
-  grad.addColorStop(1, '#1a0850');
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, W, H);
+  // ── TOP HALF: dark purple ──
+  const topGrad = ctx.createLinearGradient(0, 0, W, SPLIT);
+  topGrad.addColorStop(0, '#0d0426');
+  topGrad.addColorStop(1, '#1e0a5c');
+  ctx.fillStyle = topGrad;
+  ctx.fillRect(0, 0, W, SPLIT);
 
-  // Radial glow center
-  const glow = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, 600);
-  glow.addColorStop(0, 'rgba(108,71,255,0.18)');
+  // subtle radial glow top
+  const glow = ctx.createRadialGradient(W*0.7, 0, 0, W*0.7, 0, 700);
+  glow.addColorStop(0, 'rgba(108,71,255,0.25)');
   glow.addColorStop(1, 'rgba(108,71,255,0)');
   ctx.fillStyle = glow;
-  ctx.fillRect(0, 0, W, H);
+  ctx.fillRect(0, 0, W, SPLIT);
 
-  // Decorative circles
-  const cx = W/2, cy = H/2;
-  [320, 460, 580].forEach((r, i) => {
-    ctx.beginPath();
-    ctx.arc(cx, cy, r, 0, Math.PI * 2);
-    ctx.strokeStyle = `rgba(108,71,255,${0.05 - i * 0.012})`;
-    ctx.lineWidth = 1;
-    ctx.stroke();
-  });
-
-  // Top bar: Aftercall + category badge
-  ctx.font = 'bold 52px "Plus Jakarta Sans", system-ui, sans-serif';
-  ctx.fillStyle = 'rgba(255,255,255,0.92)';
+  // Aftercall wordmark top left
+  ctx.font = 'bold 48px "Plus Jakarta Sans", system-ui, sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.9)';
   ctx.textAlign = 'left';
-  ctx.fillText('Aftercall', 80, 104);
+  ctx.fillText('Aftercall', 72, 88);
 
+  // Category badge top right (solid pill)
   const catLabels = { grammar:'Grammar', natural:'Natural', simplicity:'Simplicity', improvement:'Improvement', custom:'Focus on…', realtalk:'Real Talk' };
   const catColors = { grammar:'#3b82f6', natural:'#10b981', simplicity:'#8b5cf6', improvement:'#f59e0b', custom:'#ec4899', realtalk:'#ef4444' };
   const catLabel = catLabels[category] || category;
   const catColor = catColors[category] || '#6c47ff';
-  ctx.font = 'bold 26px "Plus Jakarta Sans", system-ui, sans-serif';
-  const bw = ctx.measureText(catLabel).width + 44;
-  const bx = W - 80 - bw, by = 64;
-  ctx.fillStyle = catColor + '33';
-  ctx.strokeStyle = catColor;
-  ctx.lineWidth = 1.5;
-  ctx.beginPath();
-  if (ctx.roundRect) { ctx.roundRect(bx, by, bw, 40, 20); } else { ctx.rect(bx, by, bw, 40); }
-  ctx.fill(); ctx.stroke();
+  ctx.font = 'bold 24px "Plus Jakarta Sans", system-ui, sans-serif';
+  const bw = ctx.measureText(catLabel).width + 40;
+  const bx = W - 72 - bw, by = 56;
   ctx.fillStyle = catColor;
+  ctx.beginPath();
+  if (ctx.roundRect) { ctx.roundRect(bx, by, bw, 38, 19); } else { ctx.rect(bx, by, bw, 38); }
+  ctx.fill();
+  ctx.fillStyle = '#fff';
   ctx.textAlign = 'center';
-  ctx.fillText(catLabel, bx + bw/2, by + 27);
+  ctx.fillText(catLabel, bx + bw/2, by + 26);
   ctx.textAlign = 'left';
 
-  // Divider
-  ctx.fillStyle = 'rgba(255,255,255,0.07)';
-  ctx.fillRect(80, 136, W-160, 1);
+  // ❌ label
+  ctx.font = '500 26px "Plus Jakarta Sans", system-ui, sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.35)';
+  ctx.fillText('What you said', 72, 170);
 
-  // Original (red, strikethrough)
-  ctx.font = '400 54px "Plus Jakarta Sans", system-ui, sans-serif';
-  ctx.fillStyle = 'rgba(248,113,113,0.8)';
-  const origLines = wrapTextCanvas(ctx, `"${original}"`, 80, 260, W-160, 68);
-  ctx.strokeStyle = 'rgba(248,113,113,0.6)';
-  ctx.lineWidth = 2.5;
+  // Original text — large, red, strikethrough
+  ctx.font = '500 64px "Plus Jakarta Sans", system-ui, sans-serif';
+  ctx.fillStyle = '#ff8fa3';
+  const origLines = wrapTextCanvas(ctx, original, 72, 252, W - 144, 78);
+  ctx.strokeStyle = '#ff8fa3';
+  ctx.lineWidth = 3;
   origLines.forEach(l => {
     const w = ctx.measureText(l.text).width;
-    ctx.beginPath(); ctx.moveTo(80, l.y-16); ctx.lineTo(80+w, l.y-16); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(72, l.y - 22); ctx.lineTo(72 + w, l.y - 22); ctx.stroke();
   });
-  const origBottom = origLines[origLines.length-1].y;
 
-  // Arrow separator
-  ctx.fillStyle = 'rgba(255,255,255,0.15)';
-  ctx.fillRect(80, origBottom + 40, W-160, 1);
-  ctx.font = '300 36px system-ui';
-  ctx.fillStyle = 'rgba(255,255,255,0.2)';
-  ctx.textAlign = 'center';
-  ctx.fillText('↓', W/2, origBottom + 36);
-  ctx.textAlign = 'left';
+  // Diagonal cut / wave separator
+  ctx.fillStyle = '#f5f3ff';
+  ctx.beginPath();
+  ctx.moveTo(0, SPLIT - 60);
+  ctx.quadraticCurveTo(W / 2, SPLIT + 40, W, SPLIT - 60);
+  ctx.lineTo(W, H);
+  ctx.lineTo(0, H);
+  ctx.closePath();
+  ctx.fill();
 
-  // Corrected (bright green, bold, bigger)
-  ctx.font = 'bold 62px "Plus Jakarta Sans", system-ui, sans-serif';
-  ctx.fillStyle = '#22d67c';
-  const corrLines = wrapTextCanvas(ctx, `"${corrected}"`, 80, origBottom + 120, W-160, 76);
-  const corrBottom = corrLines[corrLines.length-1].y;
+  // ── BOTTOM HALF: near-white ──
+  ctx.fillStyle = '#f5f3ff';
+  ctx.fillRect(0, SPLIT, W, H - SPLIT);
 
-  // Thin divider before tagline
-  ctx.fillStyle = 'rgba(255,255,255,0.07)';
-  ctx.fillRect(80, corrBottom + 60, W-160, 1);
+  // ✅ label
+  ctx.font = '500 26px "Plus Jakarta Sans", system-ui, sans-serif';
+  ctx.fillStyle = 'rgba(30,10,92,0.4)';
+  ctx.fillText('The right way', 72, SPLIT + 80);
 
-  // Tagline (italic, elegant)
-  ctx.font = 'italic 500 38px "Plus Jakarta Sans", Georgia, serif';
-  ctx.fillStyle = 'rgba(255,255,255,0.55)';
-  ctx.fillText('The honest feedback nobody gives you.', 80, corrBottom + 110);
+  // Corrected text — huge, bold, dark green, hero element
+  ctx.font = 'bold 76px "Plus Jakarta Sans", system-ui, sans-serif';
+  ctx.fillStyle = '#0d7a45';
+  const corrLines = wrapTextCanvas(ctx, corrected, 72, SPLIT + 168, W - 144, 92);
+  const corrBottom = corrLines[corrLines.length - 1].y;
 
-  // Footer
-  ctx.font = '500 28px "Plus Jakarta Sans", system-ui, sans-serif';
-  ctx.fillStyle = 'rgba(255,255,255,0.22)';
-  ctx.textAlign = 'center';
-  ctx.fillText('aftercall.tech', W/2, H - 56);
+  // Thin divider
+  ctx.fillStyle = 'rgba(30,10,92,0.1)';
+  ctx.fillRect(72, corrBottom + 48, W - 144, 1);
+
+  // Tagline
+  ctx.font = 'italic 36px "Plus Jakarta Sans", Georgia, serif';
+  ctx.fillStyle = 'rgba(30,10,92,0.45)';
+  ctx.fillText('The honest feedback nobody gives you.', 72, corrBottom + 102);
+
+  // Footer: aftercall.tech
+  ctx.font = '600 28px "Plus Jakarta Sans", system-ui, sans-serif';
+  ctx.fillStyle = 'rgba(30,10,92,0.25)';
+  ctx.textAlign = 'right';
+  ctx.fillText('aftercall.tech', W - 72, H - 52);
   ctx.textAlign = 'left';
 }
 
