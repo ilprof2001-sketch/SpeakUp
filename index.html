@@ -1554,7 +1554,9 @@ async function startRecording() {
     }, 100);
   }
   const mimeType = getSupportedMimeType();
-  mediaRecorder = new MediaRecorder(stream, mimeType ? { mimeType } : {});
+  const recOptions = { audioBitsPerSecond: 32000 };
+  if (mimeType) recOptions.mimeType = mimeType;
+  mediaRecorder = new MediaRecorder(stream, recOptions);
   mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
   mediaRecorder.start(1000);
   isRecording = true; elapsed = 0;
