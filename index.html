@@ -904,6 +904,53 @@
     top: -9999px;
     left: -9999px;
   }
+  .share-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(10,5,32,0.85);
+    backdrop-filter: blur(12px);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .share-modal-overlay.visible { display: flex; }
+  .share-modal-preview {
+    width: min(400px, 88vw);
+    aspect-ratio: 1;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.6);
+  }
+  .share-modal-preview img { width: 100%; height: 100%; display: block; }
+  .share-modal-actions { display: flex; gap: 12px; }
+  .share-modal-btn {
+    padding: 14px 28px;
+    border-radius: 12px;
+    border: none;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.15s, opacity 0.15s;
+  }
+  .share-modal-btn:hover { transform: translateY(-1px); opacity: 0.9; }
+  .share-modal-btn.primary { background: #6c47ff; color: white; }
+  .share-modal-btn.secondary { background: rgba(255,255,255,0.12); color: white; }
+  .share-modal-close {
+    position: absolute;
+    top: 20px; right: 20px;
+    background: rgba(255,255,255,0.1);
+    border: none;
+    color: white;
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
 
   .corr-footer {
     margin-top: 10px;
@@ -1919,108 +1966,143 @@ function wrapTextCanvas(ctx, text, x, y, maxWidth, lineHeight) {
   return lines;
 }
 
-function drawShareCard(original, corrected, explanation, category) {
+function drawShareCard(original, corrected, explanation, category, score) {
   const canvas = document.getElementById('share-canvas');
   const ctx = canvas.getContext('2d');
   const W = 1080, H = 1080;
   ctx.clearRect(0, 0, W, H);
 
-  // Background
-  const grad = ctx.createLinearGradient(0, 0, 0, H);
-  grad.addColorStop(0, '#0f0520');
-  grad.addColorStop(1, '#2a1270');
+  // Background: deep dark gradient
+  const grad = ctx.createLinearGradient(0, 0, W, H);
+  grad.addColorStop(0, '#0a0520');
+  grad.addColorStop(1, '#1a0850');
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, W, H);
 
-  // Aftercall branding top left
-  ctx.font = 'bold 56px "Plus Jakarta Sans", system-ui, sans-serif';
-  ctx.fillStyle = 'rgba(255,255,255,0.95)';
+  // Radial glow center
+  const glow = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, 600);
+  glow.addColorStop(0, 'rgba(108,71,255,0.18)');
+  glow.addColorStop(1, 'rgba(108,71,255,0)');
+  ctx.fillStyle = glow;
+  ctx.fillRect(0, 0, W, H);
+
+  // Score watermark (huge background text)
+  if (score) {
+    ctx.font = 'bold 420px "Plus Jakarta Sans", system-ui, sans-serif';
+    ctx.fillStyle = 'rgba(108,71,255,0.07)';
+    ctx.textAlign = 'center';
+    ctx.fillText(score, W/2, H/2 + 150);
+    ctx.textAlign = 'left';
+  }
+
+  // Top bar: Aftercall + category badge
+  ctx.font = 'bold 52px "Plus Jakarta Sans", system-ui, sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.92)';
   ctx.textAlign = 'left';
   ctx.fillText('Aftercall', 80, 104);
 
-  // Category badge top right
   const catLabels = { grammar:'Grammar', natural:'Natural', simplicity:'Simplicity', improvement:'Improvement', custom:'Focus on…', realtalk:'Real Talk' };
   const catColors = { grammar:'#3b82f6', natural:'#10b981', simplicity:'#8b5cf6', improvement:'#f59e0b', custom:'#ec4899', realtalk:'#ef4444' };
   const catLabel = catLabels[category] || category;
   const catColor = catColors[category] || '#6c47ff';
-  ctx.font = 'bold 28px "Plus Jakarta Sans", system-ui, sans-serif';
+  ctx.font = 'bold 26px "Plus Jakarta Sans", system-ui, sans-serif';
   const bw = ctx.measureText(catLabel).width + 44;
-  const bx = W - 80 - bw, by = 62;
-  ctx.fillStyle = catColor;
+  const bx = W - 80 - bw, by = 64;
+  ctx.fillStyle = catColor + '33';
+  ctx.strokeStyle = catColor;
+  ctx.lineWidth = 1.5;
   ctx.beginPath();
-  ctx.roundRect ? ctx.roundRect(bx, by, bw, 42, 21) : (()=>{ ctx.moveTo(bx+21,by); ctx.lineTo(bx+bw-21,by); ctx.arcTo(bx+bw,by,bx+bw,by+21,21); ctx.lineTo(bx+bw,by+21); ctx.arcTo(bx+bw,by+42,bx+bw-21,by+42,21); ctx.lineTo(bx+21,by+42); ctx.arcTo(bx,by+42,bx,by+21,21); ctx.lineTo(bx,by+21); ctx.arcTo(bx,by,bx+21,by,21); ctx.closePath(); })();
-  ctx.fill();
-  ctx.fillStyle = '#fff';
+  if (ctx.roundRect) { ctx.roundRect(bx, by, bw, 40, 20); } else { ctx.rect(bx, by, bw, 40); }
+  ctx.fill(); ctx.stroke();
+  ctx.fillStyle = catColor;
   ctx.textAlign = 'center';
-  ctx.fillText(catLabel, bx + bw/2, by + 29);
+  ctx.fillText(catLabel, bx + bw/2, by + 27);
   ctx.textAlign = 'left';
 
   // Divider
-  ctx.fillStyle = 'rgba(255,255,255,0.08)';
-  ctx.fillRect(80, 136, W - 160, 1);
+  ctx.fillStyle = 'rgba(255,255,255,0.07)';
+  ctx.fillRect(80, 136, W-160, 1);
 
-  // "What you said" label
-  ctx.font = '500 30px "Plus Jakarta Sans", system-ui, sans-serif';
-  ctx.fillStyle = 'rgba(255,255,255,0.35)';
-  ctx.fillText('What you said', 80, 230);
+  // Score line
+  if (score) {
+    ctx.font = '500 30px "Plus Jakarta Sans", system-ui, sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+    ctx.fillText(`Score: ${score}/100`, 80, 196);
+  }
 
-  // Original text (red, strikethrough)
-  ctx.font = '500 52px "Plus Jakarta Sans", system-ui, sans-serif';
-  ctx.fillStyle = '#fca5a5';
-  const origLines = wrapTextCanvas(ctx, `"${original}"`, 80, 300, W - 160, 64);
-  ctx.strokeStyle = '#f87171';
-  ctx.lineWidth = 3;
+  // Original (red, strikethrough)
+  ctx.font = '400 50px "Plus Jakarta Sans", system-ui, sans-serif';
+  ctx.fillStyle = 'rgba(248,113,113,0.75)';
+  const origLines = wrapTextCanvas(ctx, `"${original}"`, 80, 280, W-160, 62);
+  ctx.strokeStyle = 'rgba(248,113,113,0.6)';
+  ctx.lineWidth = 2.5;
   origLines.forEach(l => {
     const w = ctx.measureText(l.text).width;
-    ctx.beginPath(); ctx.moveTo(80, l.y - 17); ctx.lineTo(80 + w, l.y - 17); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(80, l.y-16); ctx.lineTo(80+w, l.y-16); ctx.stroke();
   });
-  const origBottom = origLines[origLines.length - 1].y;
+  const origBottom = origLines[origLines.length-1].y;
 
-  // Arrow
-  ctx.font = '400 52px system-ui, sans-serif';
-  ctx.fillStyle = 'rgba(255,255,255,0.25)';
-  ctx.fillText('↓', 80, origBottom + 90);
+  // Arrow separator
+  ctx.fillStyle = 'rgba(255,255,255,0.15)';
+  ctx.fillRect(80, origBottom + 40, W-160, 1);
+  ctx.font = '300 36px system-ui';
+  ctx.fillStyle = 'rgba(255,255,255,0.2)';
+  ctx.textAlign = 'center';
+  ctx.fillText('↓', W/2, origBottom + 36);
+  ctx.textAlign = 'left';
 
-  // "The right way" label
-  ctx.font = '500 30px "Plus Jakarta Sans", system-ui, sans-serif';
-  ctx.fillStyle = 'rgba(255,255,255,0.35)';
-  ctx.fillText('The right way', 80, origBottom + 160);
+  // Corrected (bright green, bold, bigger)
+  ctx.font = 'bold 62px "Plus Jakarta Sans", system-ui, sans-serif';
+  ctx.fillStyle = '#22d67c';
+  const corrLines = wrapTextCanvas(ctx, `"${corrected}"`, 80, origBottom + 120, W-160, 76);
+  const corrBottom = corrLines[corrLines.length-1].y;
 
-  // Corrected text (green, bold)
-  ctx.font = 'bold 58px "Plus Jakarta Sans", system-ui, sans-serif';
-  ctx.fillStyle = '#4ade80';
-  const corrLines = wrapTextCanvas(ctx, `"${corrected}"`, 80, origBottom + 230, W - 160, 72);
-  const corrBottom = corrLines[corrLines.length - 1].y;
+  // Thin divider before tagline
+  ctx.fillStyle = 'rgba(255,255,255,0.07)';
+  ctx.fillRect(80, corrBottom + 60, W-160, 1);
 
-  // Explanation
-  ctx.font = '400 34px "Plus Jakarta Sans", system-ui, sans-serif';
+  // Tagline (italic, elegant)
+  ctx.font = 'italic 500 38px "Plus Jakarta Sans", Georgia, serif';
   ctx.fillStyle = 'rgba(255,255,255,0.55)';
-  wrapTextCanvas(ctx, explanation, 80, corrBottom + 60, W - 160, 46);
+  ctx.fillText('The honest feedback nobody gives you.', 80, corrBottom + 110);
 
   // Footer
-  ctx.font = '500 30px "Plus Jakarta Sans", system-ui, sans-serif';
-  ctx.fillStyle = 'rgba(255,255,255,0.25)';
+  ctx.font = '500 28px "Plus Jakarta Sans", system-ui, sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.22)';
   ctx.textAlign = 'center';
-  ctx.fillText('aftercall.tech', W / 2, H - 56);
+  ctx.fillText('aftercall.tech', W/2, H - 56);
   ctx.textAlign = 'left';
 }
 
 async function shareCard(original, corrected, explanation, category) {
   await document.fonts.ready;
-  drawShareCard(original, corrected, explanation, category);
+  const scoreEl = document.getElementById('score-value');
+  const score = scoreEl ? parseInt(scoreEl.textContent) || null : null;
+  drawShareCard(original, corrected, explanation, category, score);
   const canvas = document.getElementById('share-canvas');
-  canvas.toBlob(async (blob) => {
-    const file = new File([blob], 'aftercall-correction.png', { type: 'image/png' });
-    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-      try { await navigator.share({ files: [file], title: 'My English correction', text: 'aftercall.tech' }); return; } catch(e) {}
-    }
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = 'aftercall-correction.png';
-    document.body.appendChild(a); a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  }, 'image/png');
+  const dataUrl = canvas.toDataURL('image/png');
+
+  // Show modal preview
+  const modal = document.getElementById('share-modal');
+  document.getElementById('share-modal-img').src = dataUrl;
+  modal.classList.add('visible');
+
+  // Download button
+  const dlBtn = document.getElementById('share-modal-download');
+  dlBtn.onclick = () => {
+    canvas.toBlob(async (blob) => {
+      const file = new File([blob], 'aftercall-correction.png', { type: 'image/png' });
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        try { await navigator.share({ files: [file], title: 'My English correction', text: 'aftercall.tech' }); return; } catch(e) {}
+      }
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'aftercall-correction.png';
+      document.body.appendChild(a); a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 'image/png');
+  };
 }
 
 function copyCorrection(original, corrected, btn) {
@@ -2212,4 +2294,13 @@ function closeProgressDrawer() {
     `;
   });
 </script>
+
+<div class="share-modal-overlay" id="share-modal">
+  <button class="share-modal-close" onclick="document.getElementById('share-modal').classList.remove('visible')">✕</button>
+  <div class="share-modal-preview"><img id="share-modal-img" src="" alt="Share card"></div>
+  <div class="share-modal-actions">
+    <button class="share-modal-btn primary" id="share-modal-download">↓ Download</button>
+    <button class="share-modal-btn secondary" onclick="document.getElementById('share-modal').classList.remove('visible')">Close</button>
+  </div>
+</div>
 </body>
