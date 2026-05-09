@@ -1986,13 +1986,16 @@ function drawShareCard(original, corrected, explanation, category, score) {
   ctx.fillStyle = glow;
   ctx.fillRect(0, 0, W, H);
 
-  // Score watermark (huge background text)
+  // Score watermark (concentric circles)
   if (score) {
-    ctx.font = 'bold 420px "Plus Jakarta Sans", system-ui, sans-serif';
-    ctx.fillStyle = 'rgba(108,71,255,0.07)';
-    ctx.textAlign = 'center';
-    ctx.fillText(score, W/2, H/2 + 150);
-    ctx.textAlign = 'left';
+    const cx = W/2, cy = H/2;
+    [300, 420, 520].forEach((r, i) => {
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(108,71,255,${0.06 - i * 0.015})`;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    });
   }
 
   // Top bar: Aftercall + category badge
@@ -2087,21 +2090,24 @@ async function shareCard(original, corrected, explanation, category) {
   document.getElementById('share-modal-img').src = dataUrl;
   modal.classList.add('visible');
 
-  // Download button
-  const dlBtn = document.getElementById('share-modal-download');
-  dlBtn.onclick = () => {
-    canvas.toBlob(async (blob) => {
-      const file = new File([blob], 'aftercall-correction.png', { type: 'image/png' });
-      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-        try { await navigator.share({ files: [file], title: 'My English correction', text: 'aftercall.tech' }); return; } catch(e) {}
-      }
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = 'aftercall-correction.png';
-      document.body.appendChild(a); a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }, 'image/png');
+  const triggerDownload = () => canvas.toBlob(async (blob) => {
+    const file = new File([blob], 'aftercall-correction.png', { type: 'image/png' });
+    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+      try { await navigator.share({ files: [file], title: 'My English correction', text: 'aftercall.tech' }); return; } catch(e) {}
+    }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'aftercall-correction.png';
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a); URL.revokeObjectURL(url);
+  }, 'image/png');
+
+  document.getElementById('share-modal-download').onclick = triggerDownload;
+
+  document.getElementById('share-modal-twitter').onclick = () => {
+    triggerDownload();
+    const tweet = `❌ "${original}"\n✅ "${corrected}"\n\nThe honest feedback nobody gives you.\naftercall.tech`;
+    setTimeout(() => window.open('https://twitter.com/intent/tweet?text=' + encodeURIComponent(tweet), '_blank'), 500);
   };
 }
 
@@ -2300,6 +2306,7 @@ function closeProgressDrawer() {
   <div class="share-modal-preview"><img id="share-modal-img" src="" alt="Share card"></div>
   <div class="share-modal-actions">
     <button class="share-modal-btn primary" id="share-modal-download">↓ Download</button>
+    <button class="share-modal-btn secondary" id="share-modal-twitter">𝕏 Share on X</button>
     <button class="share-modal-btn secondary" onclick="document.getElementById('share-modal').classList.remove('visible')">Close</button>
   </div>
 </div>
