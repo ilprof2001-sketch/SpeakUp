@@ -1358,7 +1358,7 @@
         <span class="mode-icon">◎</span><span class="mode-name">Real Talk</span>
       </button>
       <button class="mode-btn" data-mode="custom" onclick="selectMode(this)">
-        <span class="mode-icon">◉</span><span class="mode-name">Custom</span>
+        <span class="mode-icon">◉</span><span class="mode-name">Focus on…</span>
       </button>
     </div>
     <div class="custom-input-wrap" id="custom-input-wrap">
@@ -1660,7 +1660,7 @@ async function analyse() {
   document.getElementById('transcript-section').classList.remove('visible');
   document.getElementById('error-box').classList.remove('visible');
   document.getElementById('loading-state').classList.add('visible');
-  const modeNames = {top5:'Top 5',realtalk:'Real Talk',custom:'Custom'};
+  const modeNames = {top5:'Top 5',realtalk:'Real Talk',custom:'Focus on…'};
   const customFocus = document.getElementById('custom-focus-input').value.trim();
   const loadingMsgs = ['Analysing your speaking…','Selecting the best corrections…','Almost done…'];
   let mi = 0;
@@ -1833,7 +1833,7 @@ function renderResults(corrections, modeName) {
         <span style="color:var(--border-med); margin: 0 4px;">·</span>
         <button class="btn-copy">⎘ Copy</button>
         <span style="color:var(--border-med); margin: 0 4px;">·</span>
-        <button class="btn-share">𝕏 Share</button>
+        <button class="btn-share">↗ Share</button>
       </div>
       <div class="corr-deep"></div>
     `;
@@ -1845,7 +1845,7 @@ function renderResults(corrections, modeName) {
     btn.dataset.category = c.category;
     btn.addEventListener('click', () => tellMeMore(btn));
     const shareBtn = card.querySelector('.btn-share');
-    shareBtn.addEventListener('click', () => shareOnTwitter(c.original, c.corrected));
+    shareBtn.addEventListener('click', () => shareCard(c.original, c.corrected, c.explanation, c.category));
     const copyBtn = card.querySelector('.btn-copy');
     copyBtn.addEventListener('click', () => copyCorrection(c.original, c.corrected, copyBtn));
     list.appendChild(card);
@@ -1896,16 +1896,129 @@ async function tellMeMore(btn) {
   btn.classList.remove('loading');
 }
 
-function shareOnTwitter(original, corrected) {
-  const text = `I said this in English 😭\n\n❌ "${original}"\n✅ "${corrected}"\n\nAftercall caught me lacking 💀\naftercall.tech`;
-  const url = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(text);
-  const a = document.createElement('a');
-  a.href = url;
-  a.target = '_blank';
-  a.rel = 'noopener';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+function wrapTextCanvas(ctx, text, x, y, maxWidth, lineHeight) {
+  const words = text.split(' ');
+  let line = '';
+  const lines = [];
+  let currentY = y;
+  for (let n = 0; n < words.length; n++) {
+    const testLine = line + words[n] + ' ';
+    if (ctx.measureText(testLine).width > maxWidth && n > 0) {
+      ctx.fillText(line.trim(), x, currentY);
+      lines.push({ text: line.trim(), y: currentY });
+      line = words[n] + ' ';
+      currentY += lineHeight;
+    } else {
+      line = testLine;
+    }
+  }
+  ctx.fillText(line.trim(), x, currentY);
+  lines.push({ text: line.trim(), y: currentY });
+  return lines;
+}
+
+function drawShareCard(original, corrected, explanation, category) {
+  const canvas = document.getElementById('share-canvas');
+  const ctx = canvas.getContext('2d');
+  const W = 1080, H = 1080;
+  ctx.clearRect(0, 0, W, H);
+
+  // Background
+  const grad = ctx.createLinearGradient(0, 0, 0, H);
+  grad.addColorStop(0, '#0f0520');
+  grad.addColorStop(1, '#2a1270');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+
+  // Aftercall branding top left
+  ctx.font = 'bold 56px "Plus Jakarta Sans", system-ui, sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.95)';
+  ctx.textAlign = 'left';
+  ctx.fillText('Aftercall', 80, 104);
+
+  // Category badge top right
+  const catLabels = { grammar:'Grammar', natural:'Natural', simplicity:'Simplicity', improvement:'Improvement', custom:'Focus on…', realtalk:'Real Talk' };
+  const catColors = { grammar:'#3b82f6', natural:'#10b981', simplicity:'#8b5cf6', improvement:'#f59e0b', custom:'#ec4899', realtalk:'#ef4444' };
+  const catLabel = catLabels[category] || category;
+  const catColor = catColors[category] || '#6c47ff';
+  ctx.font = 'bold 28px "Plus Jakarta Sans", system-ui, sans-serif';
+  const bw = ctx.measureText(catLabel).width + 44;
+  const bx = W - 80 - bw, by = 62;
+  ctx.fillStyle = catColor;
+  ctx.beginPath();
+  ctx.roundRect ? ctx.roundRect(bx, by, bw, 42, 21) : (()=>{ ctx.moveTo(bx+21,by); ctx.lineTo(bx+bw-21,by); ctx.arcTo(bx+bw,by,bx+bw,by+21,21); ctx.lineTo(bx+bw,by+21); ctx.arcTo(bx+bw,by+42,bx+bw-21,by+42,21); ctx.lineTo(bx+21,by+42); ctx.arcTo(bx,by+42,bx,by+21,21); ctx.lineTo(bx,by+21); ctx.arcTo(bx,by,bx+21,by,21); ctx.closePath(); })();
+  ctx.fill();
+  ctx.fillStyle = '#fff';
+  ctx.textAlign = 'center';
+  ctx.fillText(catLabel, bx + bw/2, by + 29);
+  ctx.textAlign = 'left';
+
+  // Divider
+  ctx.fillStyle = 'rgba(255,255,255,0.08)';
+  ctx.fillRect(80, 136, W - 160, 1);
+
+  // "What you said" label
+  ctx.font = '500 30px "Plus Jakarta Sans", system-ui, sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.35)';
+  ctx.fillText('What you said', 80, 230);
+
+  // Original text (red, strikethrough)
+  ctx.font = '500 52px "Plus Jakarta Sans", system-ui, sans-serif';
+  ctx.fillStyle = '#fca5a5';
+  const origLines = wrapTextCanvas(ctx, `"${original}"`, 80, 300, W - 160, 64);
+  ctx.strokeStyle = '#f87171';
+  ctx.lineWidth = 3;
+  origLines.forEach(l => {
+    const w = ctx.measureText(l.text).width;
+    ctx.beginPath(); ctx.moveTo(80, l.y - 17); ctx.lineTo(80 + w, l.y - 17); ctx.stroke();
+  });
+  const origBottom = origLines[origLines.length - 1].y;
+
+  // Arrow
+  ctx.font = '400 52px system-ui, sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.25)';
+  ctx.fillText('↓', 80, origBottom + 90);
+
+  // "The right way" label
+  ctx.font = '500 30px "Plus Jakarta Sans", system-ui, sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.35)';
+  ctx.fillText('The right way', 80, origBottom + 160);
+
+  // Corrected text (green, bold)
+  ctx.font = 'bold 58px "Plus Jakarta Sans", system-ui, sans-serif';
+  ctx.fillStyle = '#4ade80';
+  const corrLines = wrapTextCanvas(ctx, `"${corrected}"`, 80, origBottom + 230, W - 160, 72);
+  const corrBottom = corrLines[corrLines.length - 1].y;
+
+  // Explanation
+  ctx.font = '400 34px "Plus Jakarta Sans", system-ui, sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.55)';
+  wrapTextCanvas(ctx, explanation, 80, corrBottom + 60, W - 160, 46);
+
+  // Footer
+  ctx.font = '500 30px "Plus Jakarta Sans", system-ui, sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.25)';
+  ctx.textAlign = 'center';
+  ctx.fillText('aftercall.tech', W / 2, H - 56);
+  ctx.textAlign = 'left';
+}
+
+async function shareCard(original, corrected, explanation, category) {
+  await document.fonts.ready;
+  drawShareCard(original, corrected, explanation, category);
+  const canvas = document.getElementById('share-canvas');
+  canvas.toBlob(async (blob) => {
+    const file = new File([blob], 'aftercall-correction.png', { type: 'image/png' });
+    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+      try { await navigator.share({ files: [file], title: 'My English correction', text: 'aftercall.tech' }); return; } catch(e) {}
+    }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'aftercall-correction.png';
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, 'image/png');
 }
 
 function copyCorrection(original, corrected, btn) {
@@ -1952,7 +2065,7 @@ updateBadge();
 </script>
 <script>
 const catColors = { grammar:'#3b82f6', natural:'#f59e0b', simplicity:'#8b5cf6', improvement:'#6c47ff', custom:'#f97316', realtalk:'#10b981' };
-const modeDisplayNames = { top5:'Top 5', realtalk:'Real Talk', custom:'Custom' };
+const modeDisplayNames = { top5:'Top 5', realtalk:'Real Talk', custom:'Focus on…' };
 
 function getHistory() { try { return JSON.parse(localStorage.getItem('aftercall_history') || '[]'); } catch(e) { return []; } }
 
