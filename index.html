@@ -1915,23 +1915,16 @@ function drawShareCard(original, corrected, explanation, category) {
   const catLabels = { grammar:'Grammar', natural:'Natural', simplicity:'Simplicity', improvement:'Improvement', custom:'Focus on…', realtalk:'Real Talk' };
   const catLabel = catLabels[category] || category;
 
-  // ── Background: dark, brand-consistent ──
+  // ── Background: light, matches app identity ──
   const grad = ctx.createLinearGradient(0, 0, 0, H);
-  grad.addColorStop(0, '#0a0520');
-  grad.addColorStop(1, '#1a0a50');
+  grad.addColorStop(0, '#ffffff');
+  grad.addColorStop(1, '#ede9fe');
   ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, W, H);
-
-  // Subtle radial glow (brand purple, not magenta)
-  const glow = ctx.createRadialGradient(W * 0.5, H * 0.4, 0, W * 0.5, H * 0.4, 600);
-  glow.addColorStop(0, 'rgba(108,71,255,0.22)');
-  glow.addColorStop(1, 'rgba(108,71,255,0)');
-  ctx.fillStyle = glow;
   ctx.fillRect(0, 0, W, H);
 
   // ── Aftercall top left ──
   ctx.font = 'bold 44px "Plus Jakarta Sans", system-ui, sans-serif';
-  ctx.fillStyle = 'rgba(255,255,255,0.9)';
+  ctx.fillStyle = '#1a0a3a';
   ctx.textAlign = 'left';
   ctx.fillText('Aftercall', 72, 86);
 
@@ -1939,19 +1932,17 @@ function drawShareCard(original, corrected, explanation, category) {
   ctx.font = 'bold 26px "Plus Jakarta Sans", system-ui, sans-serif';
   const bw = ctx.measureText(catLabel).width + 48;
   const bx = W - 72 - bw, by = 50;
-  ctx.fillStyle = 'rgba(255,255,255,0.18)';
-  ctx.strokeStyle = 'rgba(255,255,255,0.5)';
-  ctx.lineWidth = 1.5;
+  ctx.fillStyle = '#6c47ff';
   ctx.beginPath();
   if (ctx.roundRect) ctx.roundRect(bx, by, bw, 42, 21);
   else ctx.rect(bx, by, bw, 42);
-  ctx.fill(); ctx.stroke();
+  ctx.fill();
   ctx.fillStyle = '#fff';
   ctx.textAlign = 'center';
   ctx.fillText(catLabel, bx + bw / 2, by + 29);
 
   // ── Thin divider ──
-  ctx.fillStyle = 'rgba(255,255,255,0.15)';
+  ctx.fillStyle = 'rgba(0,0,0,0.08)';
   ctx.fillRect(72, 110, W - 144, 1);
 
   // ── Calculate vertical centering ──
@@ -1967,10 +1958,10 @@ function drawShareCard(original, corrected, explanation, category) {
 
   // ── Original — faded, centered, strikethrough ──
   ctx.font = origFont;
-  ctx.fillStyle = 'rgba(255,255,255,0.65)';
+  ctx.fillStyle = 'rgba(0,0,0,0.35)';
   ctx.textAlign = 'center';
   const origLines = wrapTextCanvasCentered(ctx, original, W/2, startY + 52, W - 200, 64);
-  ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+  ctx.strokeStyle = 'rgba(0,0,0,0.3)';
   ctx.lineWidth = 2.5;
   origLines.forEach(l => {
     ctx.beginPath();
@@ -1982,30 +1973,30 @@ function drawShareCard(original, corrected, explanation, category) {
 
   // ── Arrow ──
   ctx.font = '300 52px system-ui';
-  ctx.fillStyle = 'rgba(255,255,255,0.35)';
+  ctx.fillStyle = 'rgba(108,71,255,0.4)';
   ctx.textAlign = 'center';
   ctx.fillText('↓', W/2, origBottom + 72);
 
-  // ── Corrected — HUGE, white, bold, centered — the hero ──
+  // ── Corrected — HUGE, dark purple, bold, centered — the hero ──
   ctx.font = corrFont;
-  ctx.fillStyle = '#ffffff';
+  ctx.fillStyle = '#1a0a3a';
   ctx.textAlign = 'center';
   const corrLines = wrapTextCanvasCentered(ctx, corrected, W/2, origBottom + 160, W - 160, 104);
   const corrBottom = corrLines[corrLines.length - 1].y;
 
   // ── Thin divider ──
-  ctx.fillStyle = 'rgba(255,255,255,0.15)';
+  ctx.fillStyle = 'rgba(0,0,0,0.08)';
   ctx.fillRect(72, corrBottom + 52, W - 144, 1);
 
   // ── Tagline ──
   ctx.font = 'italic 34px "Plus Jakarta Sans", Georgia, serif';
-  ctx.fillStyle = 'rgba(255,255,255,0.6)';
+  ctx.fillStyle = 'rgba(0,0,0,0.4)';
   ctx.textAlign = 'center';
   ctx.fillText('The honest feedback nobody gives you.', W/2, corrBottom + 100);
 
   // ── aftercall.tech footer ──
   ctx.font = '600 26px "Plus Jakarta Sans", system-ui, sans-serif';
-  ctx.fillStyle = 'rgba(255,255,255,0.28)';
+  ctx.fillStyle = 'rgba(108,71,255,0.5)';
   ctx.textAlign = 'center';
   ctx.fillText('aftercall.tech', W/2, H - 48);
   ctx.textAlign = 'left';
