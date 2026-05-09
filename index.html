@@ -1915,18 +1915,17 @@ function drawShareCard(original, corrected, explanation, category) {
   const catLabels = { grammar:'Grammar', natural:'Natural', simplicity:'Simplicity', improvement:'Improvement', custom:'Focus on…', realtalk:'Real Talk' };
   const catLabel = catLabels[category] || category;
 
-  // ── Bold gradient background (Spotify Wrapped style) ──
-  const grad = ctx.createLinearGradient(0, 0, W, H);
-  grad.addColorStop(0,   '#1a0060');
-  grad.addColorStop(0.45,'#6c47ff');
-  grad.addColorStop(1,   '#c026d3');
+  // ── Background: dark, brand-consistent ──
+  const grad = ctx.createLinearGradient(0, 0, 0, H);
+  grad.addColorStop(0, '#0a0520');
+  grad.addColorStop(1, '#1a0a50');
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, W, H);
 
-  // Soft radial highlight top-right
-  const glow = ctx.createRadialGradient(W, 0, 0, W, 0, 800);
-  glow.addColorStop(0, 'rgba(255,255,255,0.12)');
-  glow.addColorStop(1, 'rgba(255,255,255,0)');
+  // Subtle radial glow (brand purple, not magenta)
+  const glow = ctx.createRadialGradient(W * 0.5, H * 0.4, 0, W * 0.5, H * 0.4, 600);
+  glow.addColorStop(0, 'rgba(108,71,255,0.22)');
+  glow.addColorStop(1, 'rgba(108,71,255,0)');
   ctx.fillStyle = glow;
   ctx.fillRect(0, 0, W, H);
 
