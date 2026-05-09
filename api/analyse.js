@@ -27,7 +27,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
   try {
-    const { text, mode, customFocus } = req.body;
+    const { text } = req.body;
 
     let clerkUser = null;
     let userId = null;
@@ -59,46 +59,22 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'No text provided' });
     }
 
-    let modeInstruction = '';
+    const prompt = `You are an English speaking coach. A non-native English speaker has spoken the following transcript.
+Your task: identify up to 5 real errors — things a native speaker would consider wrong or clearly unnatural.
 
-    if (mode === 'top5') {
-      modeInstruction = `Select the 5 most impactful corrections across all dimensions (grammar, naturalness, fluency, word choice). Prioritize errors that make the speaker sound unnatural or unclear to a native English speaker.`;
-    }
-    else if (mode === 'realtalk') {
-      modeInstruction = `You are analyzing casual, informal spoken English. Apply these rules:
-1. NEVER correct slang or informal forms that native speakers use in casual conversation (ain't, gonna, wanna, dunno, etc.). Instead, acknowledge them with a light ironic tone: explain they are technically informal but totally fine in casual speech.
-2. If the speaker uses overly formal or textbook English, suggest the more natural informal version a native speaker would actually use in conversation.
-3. Only correct genuine errors that even a native speaker would never say in any context — these always take priority.
-4. Actively suggest more natural, colloquial alternatives even when the speaker's version is technically correct.
-5. Tone of explanations: friendly, slightly ironic, like advice from a native speaker friend — not a grammar teacher.
-6. Use category "realtalk" for casual/slang observations, "grammar" only for real errors that must be fixed.`;
-    }
-    else if (mode === 'custom') {
-      const focus = customFocus || 'general improvement';
-      modeInstruction = `The user has specified this focus: "${focus}".
-Adapt your analysis accordingly:
-- If the focus is an exam (C1, IELTS, TOEFL, Cambridge, etc.): act as a strict examiner. Correct not just errors but also flat or generic phrasing. Suggest more sophisticated vocabulary and structures. Flag correct but weak sentences that would score lower in an exam.
-- If the focus is a grammar topic (prepositions, articles, tenses, etc.): concentrate exclusively on that topic. Ignore other types of errors unless they are very serious.
-- If the focus is a context (job interview, business calls, academic writing): adapt tone and vocabulary suggestions accordingly.
-Always correct genuine grammar errors regardless of the focus.`;
-    }
-    else {
-      modeInstruction = `Select the 5 most impactful corrections across all dimensions.`;
-    }
+CATEGORIES (pick the most accurate one per correction):
+- "grammar": structural errors (wrong tense, subject-verb agreement, missing articles, wrong preposition)
+- "vocabulary": wrong word choice, false friends, or a word that is too weak/imprecise for the context
+- "naturalness": grammatically correct but unnatural — a native speaker would never phrase it this way
+- "fluency": awkward sentence structure, unnecessary repetition, or confusing word order
 
-    const prompt = `You are a strict English speaking coach. A non-native English speaker (likely Italian) has spoken the following transcript.
-Your task: identify ONLY real errors — things a native speaker would consider wrong or clearly unnatural. ${modeInstruction}
-
-STRICT RULES — read carefully:
-- Ask yourself before each correction: "Would a native speaker consider this WRONG, or just different from how they'd phrase it?" Only include it if the answer is clearly WRONG.
-- NEVER rewrite a correct sentence just because a different version exists. Multiple correct phrasings exist in English — that is not an error.
-- NEVER swap synonyms (said/remarked, probably/likely, into/in when both are correct, no matter/regardless). Synonyms are not corrections.
-- NEVER suggest restructuring sentences that are already clear and grammatical.
-- If the text is already good English, return an empty array []. This is a valid and correct response.
-- If there are only 1 or 2 real errors, return only 1 or 2 corrections. Never pad to reach 5.
-- Each correction must fix something genuinely wrong, not something merely different.
+STRICT RULES:
+- Only correct real errors. Ask: "Would a native speaker consider this WRONG?" If no, skip it.
+- NEVER swap synonyms or rewrite correct sentences just because another version exists.
+- If the text is already good English, return an empty array [].
+- If there are only 1-2 real errors, return only 1-2 corrections. Never pad to reach 5.
 - Explanations must be brief and encouraging (max 2 sentences).
-- Categories must be one of: grammar, natural, simplicity, improvement, custom, realtalk
+
 Respond ONLY with a valid JSON array. No preamble, no markdown, no extra text.
 Format:
 [
@@ -106,7 +82,7 @@ Format:
     "original": "what they said",
     "corrected": "better version",
     "explanation": "brief explanation",
-    "category": "grammar|natural|simplicity|improvement|custom|realtalk"
+    "category": "grammar|vocabulary|naturalness|fluency"
   }
 ]
 Transcript:
@@ -124,7 +100,6 @@ ${text}
     const raw = completion.choices[0].message.content || '';
     const corrections = JSON.parse(raw.replace(/```json|```/g, '').trim());
 
-    // Increment server-side session count for non-premium logged-in users
     if (clerkUser && clerkUser.publicMetadata?.premium !== true) {
       const sessionCount = (clerkUser.privateMetadata?.sessionCount || 0) + 1;
       await clerk.users.updateUserMetadata(clerkUser.id, {

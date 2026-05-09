@@ -855,12 +855,10 @@
   .corr-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
   .corr-num { font-size: 11px; font-weight: 600; color: var(--text-faint); letter-spacing: 0.06em; }
   .corr-cat { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
-  .cat-grammar { background: #eff6ff; color: #1d4ed8; }
-  .cat-natural { background: #fffbeb; color: #92400e; }
-  .cat-simplicity { background: #f5f3ff; color: #6d28d9; }
-  .cat-improvement { background: var(--accent-light); color: var(--accent-text); }
-  .cat-custom { background: #fff7ed; color: #c2410c; }
-.cat-realtalk { background: #f0fdf4; color: #15803d; }
+  .cat-grammar    { background: #eff6ff; color: #1d4ed8; }
+  .cat-vocabulary { background: #fffbeb; color: #92400e; }
+  .cat-naturalness{ background: #f5f3ff; color: #6d28d9; }
+  .cat-fluency    { background: #f0fdf4; color: #15803d; }
 
   .corr-phrases {
     display: grid;
@@ -1350,23 +1348,6 @@
   </div>
 </div>
 
-  <div class="section" id="step-mode">
-    <div class="label">Choose your focus</div>
-    <div class="modes">
-      <button class="mode-btn active" data-mode="top5" onclick="selectMode(this)">
-        <span class="mode-icon">✦</span><span class="mode-name">Top 5</span>
-      </button>
-      <button class="mode-btn" data-mode="realtalk" onclick="selectMode(this)">
-        <span class="mode-icon">◎</span><span class="mode-name">Real Talk</span>
-      </button>
-      <button class="mode-btn" data-mode="custom" onclick="selectMode(this)">
-        <span class="mode-icon">◉</span><span class="mode-name">Focus on…</span>
-      </button>
-    </div>
-    <div class="custom-input-wrap" id="custom-input-wrap">
-      <input type="text" id="custom-focus-input" placeholder="e.g. C1 exam, sound more posh, job interview…" />
-    </div>
-  </div>
 
   <div class="section" id="step-record">
     <div class="label">Record your conversation</div>
@@ -1483,7 +1464,7 @@ let timerInterval = null;
 let waveInterval = null;
 let elapsed = 0;
 let manualVisible = false;
-const catClasses = { grammar:'cat-grammar', natural:'cat-natural', simplicity:'cat-simplicity', improvement:'cat-improvement', custom:'cat-custom', realtalk:'cat-realtalk' };
+const catClasses = { grammar:'cat-grammar', vocabulary:'cat-vocabulary', naturalness:'cat-naturalness', fluency:'cat-fluency' };
 
 function getSessions() { return parseInt(localStorage.getItem('aftercall_sessions') || '0'); }
 function incrementSessions() { localStorage.setItem('aftercall_sessions', getSessions() + 1); }
@@ -1660,8 +1641,6 @@ async function analyse() {
   document.getElementById('transcript-section').classList.remove('visible');
   document.getElementById('error-box').classList.remove('visible');
   document.getElementById('loading-state').classList.add('visible');
-  const modeNames = {top5:'Top 5',realtalk:'Real Talk',custom:'Focus on…'};
-  const customFocus = document.getElementById('custom-focus-input').value.trim();
   const loadingMsgs = ['Analysing your speaking…','Selecting the best corrections…','Almost done…'];
   let mi = 0;
   const loadTick = setInterval(()=>{mi=(mi+1)%loadingMsgs.length;document.getElementById('loading-msg').textContent=loadingMsgs[mi];},1800);
@@ -1671,7 +1650,7 @@ async function analyse() {
       const token = await window.Clerk.session.getToken();
       if (token) headers['Authorization'] = `Bearer ${token}`;
     }
-    const response = await fetch('/api/analyse',{method:'POST',headers,body:JSON.stringify({text,mode:selectedMode,customFocus})});
+    const response = await fetch('/api/analyse',{method:'POST',headers,body:JSON.stringify({text,mode:'top5'})});
     clearInterval(loadTick);
     if (response.status === 401) {
       document.getElementById('loading-state').classList.remove('visible');
@@ -1688,13 +1667,13 @@ async function analyse() {
     const data = await response.json();
     if (data.error) throw new Error(data.error);
     incrementSessions(); updateBadge(); showSessionBanner();
-    saveSession(data.corrections, selectedMode);
+    saveSession(data.corrections, 'top5');
     document.getElementById('loading-state').classList.remove('visible');
     if (!data.corrections || data.corrections.length === 0) {
       document.getElementById('step-analyse').style.display = 'block';
       showError('No corrections needed — your English sounds great!');
     } else {
-      renderResults(data.corrections, modeNames[selectedMode], text);
+      renderResults(data.corrections, text);
     }
   } catch(err) {
     clearInterval(loadTick);
@@ -1769,8 +1748,7 @@ function handleUpgrade() { window.open('https://buy.stripe.com/5kQbJ18OZ1BAa5ic8
 
 
 // FIX: usa dataset invece di parametri onclick per evitare problemi con apostrofi
-function renderResults(corrections, modeName, text) {
-  document.getElementById('results-mode-tag').textContent = modeName;
+function renderResults(corrections, text) {
   const n = corrections.length;
   document.getElementById('results-title').textContent = n === 1 ? 'Your 1 correction' : `Your ${n} corrections`;
 
@@ -1886,7 +1864,7 @@ function drawShareCard(original, corrected, explanation, category) {
   const W = 1080, H = 1080;
   ctx.clearRect(0, 0, W, H);
 
-  const catLabels = { grammar:'Grammar', natural:'Natural', simplicity:'Simplicity', improvement:'Improvement', custom:'Focus on…', realtalk:'Real Talk' };
+  const catLabels = { grammar:'Grammar', vocabulary:'Vocabulary', naturalness:'Naturalness', fluency:'Fluency' };
   const catLabel = catLabels[category] || category;
 
   // ── Background: light, matches app identity ──
@@ -2054,7 +2032,7 @@ function newSession() {
 updateBadge();
 </script>
 <script>
-const catColors = { grammar:'#3b82f6', natural:'#f59e0b', simplicity:'#8b5cf6', improvement:'#6c47ff', custom:'#f97316', realtalk:'#10b981' };
+const catColors = { grammar:'#3b82f6', vocabulary:'#f59e0b', naturalness:'#8b5cf6', fluency:'#10b981' };
 const modeDisplayNames = { top5:'Top 5', realtalk:'Real Talk', custom:'Focus on…' };
 
 function getHistory() { try { return JSON.parse(localStorage.getItem('aftercall_history') || '[]'); } catch(e) { return []; } }
