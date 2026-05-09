@@ -1694,7 +1694,7 @@ async function analyse() {
       document.getElementById('step-analyse').style.display = 'block';
       showError('No corrections needed — your English sounds great!');
     } else {
-      renderResults(data.corrections, modeNames[selectedMode]);
+      renderResults(data.corrections, modeNames[selectedMode], text);
     }
   } catch(err) {
     clearInterval(loadTick);
@@ -1786,14 +1786,16 @@ function launchConfetti() {
 }
 
 // FIX: usa dataset invece di parametri onclick per evitare problemi con apostrofi
-function renderResults(corrections, modeName) {
+function renderResults(corrections, modeName, text) {
   document.getElementById('results-mode-tag').textContent = modeName;
   const n = corrections.length;
   document.getElementById('results-title').textContent = n === 1 ? 'Your 1 correction' : `Your ${n} corrections`;
 
-  const weights = { grammar: 15, natural: 10 };
-  const penalty = corrections.reduce((sum, c) => sum + (weights[c.category] || 5), 0);
-  const score = Math.max(20, 100 - penalty);
+  const wordCount = (text || '').trim().split(/\s+/).filter(Boolean).length || 10;
+  const lengthFactor = Math.max(0.3, Math.min(1.0, 30 / wordCount));
+  const penaltyWeights = { grammar: 25, natural: 15, simplicity: 10, improvement: 8, custom: 10, realtalk: 6 };
+  const penalty = corrections.reduce((sum, c) => sum + (penaltyWeights[c.category] || 10), 0) * lengthFactor;
+  const score = Math.round(Math.max(20, 100 - penalty));
   const msgs = score >= 85
     ? 'Great session! Keep it up'
     : score >= 70
