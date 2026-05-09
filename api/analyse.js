@@ -1,7 +1,10 @@
+import * as Sentry from '@sentry/node';
 import OpenAI from 'openai';
 import { createClerkClient } from '@clerk/backend';
 import { createRemoteJWKSet, jwtVerify } from 'jose';
 import { checkRateLimit } from './_rateLimit.js';
+
+Sentry.init({ dsn: 'https://9483f1877a25600a4b5cd3538e012cf7@o4511359027445760.ingest.de.sentry.io/4511359033213008' });
 
 const clerk = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
 const JWKS = createRemoteJWKSet(new URL('https://clerk.aftercall.tech/.well-known/jwks.json'));
@@ -131,6 +134,7 @@ ${text}
 
     return res.status(200).json({ corrections });
   } catch (err) {
+    Sentry.captureException(err);
     console.error('Analyse error:', err);
     return res.status(500).json({ error: err.message || 'Analysis failed' });
   }
