@@ -1737,14 +1737,28 @@ function updateUserButton() {
     const name = window.Clerk.user.firstName || window.Clerk.user.emailAddresses[0].emailAddress.split('@')[0];
     const sessions = getSessions();
     const remaining = Math.max(0, MAX_SESSIONS_LOGGED - sessions);
+    const manageLink = isPremium() ? ' · <span onclick="handleManageSubscription()" style="cursor:pointer;text-decoration:underline;">Manage subscription</span>' : '';
     const sessionText = isPremium() ? '✦ Premium' : remaining + ' left';
-    badge.innerHTML = 'Hi, ' + name + ' · ' + sessionText + ' · <span onclick="window.Clerk.signOut()" style="cursor:pointer;text-decoration:underline;">Sign out</span>';
+    badge.innerHTML = 'Hi, ' + name + ' · ' + sessionText + manageLink + ' · <span onclick="window.Clerk.signOut()" style="cursor:pointer;text-decoration:underline;">Sign out</span>';
     badge.className = 'session-badge';
   } else {
     updateBadge();
   }
 }
 function handleUpgrade() { window.open('https://buy.stripe.com/5kQbJ18OZ1BAa5ic8K5AQ00', '_blank'); }
+async function handleManageSubscription() {
+  try {
+    const token = await window.Clerk.session.getToken();
+    const res = await fetch('/api/create-portal-session', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    const data = await res.json();
+    if (data.url) window.location.href = data.url;
+  } catch (e) {
+    alert('Unable to open subscription portal. Please try again.');
+  }
+}
 
 
 
