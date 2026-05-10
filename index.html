@@ -1450,6 +1450,17 @@
   </div>
 </div>
 
+<div class="paywall-overlay" id="signout-overlay">
+  <div class="paywall-card" style="max-width:320px;padding:32px 28px;">
+    <div class="paywall-title" style="font-size:18px;margin-bottom:8px;">Sign out?</div>
+    <div class="paywall-subtitle" style="margin-bottom:24px;">You'll need to sign in again to access your account.</div>
+    <div style="display:flex;gap:10px;">
+      <button onclick="document.getElementById('signout-overlay').classList.remove('visible')" style="flex:1;padding:12px;border:1.5px solid var(--border);border-radius:10px;background:transparent;font-size:14px;font-weight:600;cursor:pointer;color:var(--text);">Cancel</button>
+      <button onclick="document.getElementById('signout-overlay').classList.remove('visible');window.Clerk.signOut()" style="flex:1;padding:12px;border:none;border-radius:10px;background:var(--accent);color:#fff;font-size:14px;font-weight:600;cursor:pointer;">Sign out</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const MAX_SESSIONS_GUEST = 3;
 const MAX_SESSIONS_LOGGED = 6;
@@ -1741,7 +1752,7 @@ function updateUserButton() {
     const sessionText = isPremium() ? '✦ Premium' : remaining + ' left';
     badge.onclick = null;
     badge.style.cursor = 'default';
-    badge.innerHTML = 'Hi, ' + name + ' · ' + sessionText + manageLink + ' · <span onclick="window.Clerk.signOut()" style="cursor:pointer;text-decoration:underline;">Sign out</span>';
+    badge.innerHTML = 'Hi, ' + name + ' · ' + sessionText + manageLink + ' · <span onclick="document.getElementById('signout-overlay').classList.add('visible')" style="cursor:pointer;text-decoration:underline;">Sign out</span>';
     badge.className = 'session-badge';
     document.getElementById('limit-label').textContent = isPremium() ? '30:00 premium' : '5:00 free';
   } else {
