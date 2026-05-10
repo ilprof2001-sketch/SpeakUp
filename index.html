@@ -1899,8 +1899,10 @@ function drawShareCard(original, corrected, explanation, category) {
   ctx.fillRect(72, 110, W - 144, 1);
 
   // ── Calculate vertical centering ──
-  const origFont = '400 52px "Plus Jakarta Sans", system-ui, sans-serif';
-  const corrFont = 'bold 88px "Plus Jakarta Sans", system-ui, sans-serif';
+  const origSize = original.length < 40 ? 52 : original.length < 80 ? 40 : 32;
+  const origFont = `400 ${origSize}px "Plus Jakarta Sans", system-ui, sans-serif`;
+  const corrSize = corrected.length < 40 ? 88 : corrected.length < 70 ? 68 : corrected.length < 100 ? 54 : 44;
+  const corrFont = `bold ${corrSize}px "Plus Jakarta Sans", system-ui, sans-serif`;
   ctx.font = origFont;
   const origLineCount = Math.max(1, Math.ceil(ctx.measureText(original).width / (W - 200)));
   ctx.font = corrFont;
