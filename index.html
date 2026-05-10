@@ -1739,6 +1739,8 @@ function updateUserButton() {
     const remaining = Math.max(0, MAX_SESSIONS_LOGGED - sessions);
     const manageLink = isPremium() ? ' · <span onclick="handleManageSubscription()" style="cursor:pointer;text-decoration:underline;">Manage subscription</span>' : '';
     const sessionText = isPremium() ? '✦ Premium' : remaining + ' left';
+    badge.onclick = null;
+    badge.style.cursor = 'default';
     badge.innerHTML = 'Hi, ' + name + ' · ' + sessionText + manageLink + ' · <span onclick="window.Clerk.signOut()" style="cursor:pointer;text-decoration:underline;">Sign out</span>';
     badge.className = 'session-badge';
     document.getElementById('limit-label').textContent = isPremium() ? '30:00 premium' : '5:00 free';
