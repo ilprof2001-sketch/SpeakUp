@@ -1999,16 +1999,8 @@ async function shareCard(original, corrected, explanation, category) {
   document.getElementById('share-modal-download').onclick = triggerDownload;
 
   document.getElementById('share-modal-twitter').onclick = () => {
-    // Always direct download + open Twitter, never use Web Share API here
-    canvas.toBlob((blob) => {
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = 'aftercall-correction.png';
-      document.body.appendChild(a); a.click();
-      document.body.removeChild(a); URL.revokeObjectURL(url);
-    }, 'image/png');
     const tweet = `❌ "${original}"\n✅ "${corrected}"\n\nThe honest feedback nobody gives you.\naftercall.tech`;
-    setTimeout(() => window.open('https://twitter.com/intent/tweet?text=' + encodeURIComponent(tweet), '_blank'), 400);
+    window.open('https://twitter.com/intent/tweet?text=' + encodeURIComponent(tweet), '_blank');
   };
 }
 
