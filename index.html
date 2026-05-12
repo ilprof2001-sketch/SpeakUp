@@ -1659,7 +1659,6 @@ async function analyse() {
   const text = document.getElementById('transcript-box').textContent.trim() || document.getElementById('manual-textarea').value.trim();
   if (!text) { showError('No text to analyse. Record your voice or paste a transcript.'); return; }
   document.getElementById('step-analyse').style.display = 'none';
-  document.getElementById('transcript-section').classList.remove('visible');
   document.getElementById('error-box').classList.remove('visible');
   document.getElementById('loading-state').classList.add('visible');
   const loadingMsgs = ['Analysing your speaking…','Selecting the best corrections…','Almost done…'];
