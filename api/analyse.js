@@ -69,6 +69,7 @@ CATEGORIES — choose carefully, do NOT default to "grammar":
 - "fluency": awkward sentence structure, unnecessary repetition, or word order that makes the sentence hard to follow
 
 STRICT RULES:
+- Prioritise errors that most damage how a native speaker perceives the speaker — not the first errors you find. Pick the most impactful ones across the whole transcript.
 - Only correct real errors. Ask: "Would a native speaker consider this WRONG?" If no, skip it.
 - NEVER swap synonyms or rewrite correct sentences just because another version exists.
 - If the text is already good English, return an empty array [].
