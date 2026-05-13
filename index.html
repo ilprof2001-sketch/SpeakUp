@@ -1309,6 +1309,7 @@
   <div class="logo">After<em>call</em></div>
   <div style="display:flex; align-items:center; gap:10px;">
     <button class="btn-progress" onclick="openProgressDrawer()">📈 My Progress</button>
+    <button class="btn-progress" id="btn-signin-header" onclick="showLoginModal()" style="display:none;">Sign in</button>
     <div class="session-badge" id="session-badge">3 sessions left</div>
     <div id="user-button-mount" style="display:none;"></div>
   </div>
@@ -1501,6 +1502,8 @@ function updateBadge() {
   const max = getMaxSessions();
   const remaining = Math.max(0, max - sessions);
   const badge = document.getElementById('session-badge');
+  const signinBtn = document.getElementById('btn-signin-header');
+  if (signinBtn) signinBtn.style.display = isLoggedIn() ? 'none' : 'inline-flex';
   if (isPremium()) { badge.textContent = 'Premium ✦'; badge.className = 'session-badge'; return; }
   if (remaining === 0) { badge.textContent = 'Upgrade to Premium'; badge.className = 'session-badge out'; badge.style.cursor = 'pointer'; badge.onclick = () => { isLoggedIn() ? document.getElementById('paywall-overlay').classList.add('visible') : showLoginModal(); }; }
   else if (remaining === 1) { badge.textContent = '1 session left'; badge.className = 'session-badge warn'; }
