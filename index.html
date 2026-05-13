@@ -1944,15 +1944,24 @@ function drawShareCard(original, corrected, explanation, category) {
   ctx.fillStyle = 'rgba(0,0,0,0.08)';
   ctx.fillRect(72, 110, W - 144, 1);
 
+  // ── Extract only changed words ──
+  const ow = original.split(' '), cw = corrected.split(' ');
+  let pre = 0;
+  while (pre < ow.length && pre < cw.length && ow[pre] === cw[pre]) pre++;
+  let suf = 0;
+  while (suf < ow.length - pre && suf < cw.length - pre && ow[ow.length-1-suf] === cw[cw.length-1-suf]) suf++;
+  const origDisplay = (suf > 0 ? ow.slice(pre, ow.length - suf) : ow.slice(pre)).join(' ') || original;
+  const corrDisplay = (suf > 0 ? cw.slice(pre, cw.length - suf) : cw.slice(pre)).join(' ') || corrected;
+
   // ── Calculate vertical centering ──
-  const origSize = original.length < 40 ? 52 : original.length < 80 ? 40 : 32;
+  const origSize = origDisplay.length < 20 ? 80 : origDisplay.length < 40 ? 60 : 44;
   const origFont = `400 ${origSize}px "Plus Jakarta Sans", system-ui, sans-serif`;
-  const corrSize = corrected.length < 40 ? 88 : corrected.length < 70 ? 68 : corrected.length < 100 ? 54 : 44;
+  const corrSize = corrDisplay.length < 20 ? 120 : corrDisplay.length < 40 ? 96 : 72;
   const corrFont = `bold ${corrSize}px "Plus Jakarta Sans", system-ui, sans-serif`;
   ctx.font = origFont;
-  const origLineCount = Math.max(1, Math.ceil(ctx.measureText(original).width / (W - 200)));
+  const origLineCount = Math.max(1, Math.ceil(ctx.measureText(origDisplay).width / (W - 200)));
   ctx.font = corrFont;
-  const corrLineCount = Math.max(1, Math.ceil(ctx.measureText(corrected).width / (W - 160)));
+  const corrLineCount = Math.max(1, Math.ceil(ctx.measureText(corrDisplay).width / (W - 160)));
   const totalContentH = origLineCount * 64 + 80 + 20 + corrLineCount * 104 + 80 + 44 + 40;
   const usableStart = 130, usableEnd = H - 80;
   const startY = Math.max(usableStart + 60, usableStart + (usableEnd - usableStart - totalContentH) / 2);
@@ -1961,7 +1970,7 @@ function drawShareCard(original, corrected, explanation, category) {
   ctx.font = origFont;
   ctx.fillStyle = 'rgba(0,0,0,0.35)';
   ctx.textAlign = 'center';
-  const origLines = wrapTextCanvasCentered(ctx, original, W/2, startY + 52, W - 200, 64);
+  const origLines = wrapTextCanvasCentered(ctx, origDisplay, W/2, startY + 52, W - 200, 64);
   ctx.strokeStyle = 'rgba(0,0,0,0.3)';
   ctx.lineWidth = 2.5;
   origLines.forEach(l => {
@@ -1982,7 +1991,7 @@ function drawShareCard(original, corrected, explanation, category) {
   ctx.font = corrFont;
   ctx.fillStyle = '#1a0a3a';
   ctx.textAlign = 'center';
-  const corrLines = wrapTextCanvasCentered(ctx, corrected, W/2, origBottom + 160, W - 160, 104);
+  const corrLines = wrapTextCanvasCentered(ctx, corrDisplay, W/2, origBottom + 160, W - 160, 104);
   const corrBottom = corrLines[corrLines.length - 1].y;
 
   // ── Thin divider ──
