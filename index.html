@@ -867,10 +867,10 @@
     align-items: start;
     margin-bottom: 14px;
   }
-  .phrase-box { border-radius: var(--r); padding: 10px 12px; font-size: 13px; line-height: 1.5; font-weight: 500; }
-  .phrase-original { background: var(--red-light); color: #b91c1c; text-decoration: line-through; text-decoration-color: rgba(185,28,28,0.4); }
+  .phrase-box { border-radius: var(--r); padding: 10px 12px; font-size: 13px; line-height: 1.5; font-weight: 500; background: var(--bg-card); color: var(--text); }
   .phrase-arrow { color: var(--text-faint); font-size: 16px; text-align: center; padding-top: 9px; }
-  .phrase-corrected { background: var(--green-light); color: #065f46; }
+  .word-error { background: var(--red-light); color: #b91c1c; border-radius: 3px; padding: 1px 3px; text-decoration: line-through; text-decoration-color: rgba(185,28,28,0.4); }
+  .word-correct { background: var(--green-light); color: #065f46; border-radius: 3px; padding: 1px 3px; }
 
   .corr-explanation {
     font-size: 13px;
@@ -1801,9 +1801,9 @@ function renderResults(corrections, text) {
     card.innerHTML = `
       <div class="corr-top"><span class="corr-num">#${i+1}</span><span class="corr-cat ${catClass}">${escHtml(catLabel)}</span></div>
       <div class="corr-phrases">
-        <div class="phrase-box phrase-original">${escHtml(c.original)}</div>
+        <div class="phrase-box">${diffHighlight(c.original, c.corrected).oHtml}</div>
         <div class="phrase-arrow">→</div>
-        <div class="phrase-box phrase-corrected">${escHtml(c.corrected)}</div>
+        <div class="phrase-box">${diffHighlight(c.original, c.corrected).cHtml}</div>
       </div>
       <div class="corr-explanation">${escHtml(c.explanation)}</div>
       <div class="corr-footer">
@@ -2040,6 +2040,24 @@ async function shareCard(original, corrected, explanation, category) {
 
  function showError(msg) { const el=document.getElementById('error-box'); el.textContent=msg; el.classList.add('visible'); }
 function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function diffHighlight(orig, corr) {
+  const ow = orig.split(' '), cw = corr.split(' ');
+  let pre = 0;
+  while (pre < ow.length && pre < cw.length && ow[pre] === cw[pre]) pre++;
+  let suf = 0;
+  while (suf < ow.length - pre && suf < cw.length - pre &&
+         ow[ow.length - 1 - suf] === cw[cw.length - 1 - suf]) suf++;
+  const wrap = (words, cls) => {
+    const parts = [];
+    if (pre > 0) parts.push(escHtml(words.slice(0, pre).join(' ')));
+    const mid = suf > 0 ? words.slice(pre, words.length - suf) : words.slice(pre);
+    if (mid.length > 0) parts.push(`<span class="${cls}">${escHtml(mid.join(' '))}</span>`);
+    if (suf > 0) parts.push(escHtml(words.slice(words.length - suf).join(' ')));
+    return parts.join(' ');
+  };
+  return { oHtml: wrap(ow, 'word-error'), cHtml: wrap(cw, 'word-correct') };
+}
 
 function newSession() {
   elapsed=0; audioChunks=[];
