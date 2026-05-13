@@ -1728,24 +1728,13 @@ function showSessionBanner() {
 function closeLogin() { document.getElementById('login-overlay').classList.remove('visible'); }
 
 function showLoginModal() {
-  document.getElementById('login-overlay').classList.add('visible');
-  const mountEl = document.getElementById('clerk-mount');
-  const maybeBtn = document.getElementById('maybe-later-btn');
-  mountEl.innerHTML = '';
-  maybeBtn.style.display = 'none';
-  if (window.Clerk && window.Clerk.mountSignIn) {
-    window.Clerk.mountSignIn(mountEl);
-    const observer = new MutationObserver(() => {
-      if (mountEl.children.length > 0) {
-        maybeBtn.style.display = 'block';
-        observer.disconnect();
-      }
-    });
-    observer.observe(mountEl, { childList: true, subtree: true });
-    setTimeout(() => { maybeBtn.style.display = 'block'; observer.disconnect(); }, 3000);
+  if (window.Clerk && window.Clerk.openSignIn) {
+    window.Clerk.openSignIn();
   } else {
+    document.getElementById('login-overlay').classList.add('visible');
+    const mountEl = document.getElementById('clerk-mount');
     mountEl.innerHTML = '<p style="text-align:center;color:#555;font-size:14px;padding:16px 0;">Loading sign-in… <br><br>If this takes too long, <a href="javascript:location.reload()" style="color:#6c47ff;font-weight:600;">refresh the page</a> and try again.</p>';
-    maybeBtn.style.display = 'block';
+    document.getElementById('maybe-later-btn').style.display = 'block';
   }
 }
 
