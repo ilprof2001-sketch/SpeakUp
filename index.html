@@ -1944,14 +1944,19 @@ function drawShareCard(original, corrected, explanation, category) {
   ctx.fillStyle = 'rgba(0,0,0,0.08)';
   ctx.fillRect(72, 110, W - 144, 1);
 
-  // ── Extract only changed words ──
+  // ── Extract changed words with surrounding context ──
   const ow = original.split(' '), cw = corrected.split(' ');
   let pre = 0;
   while (pre < ow.length && pre < cw.length && ow[pre] === cw[pre]) pre++;
   let suf = 0;
   while (suf < ow.length - pre && suf < cw.length - pre && ow[ow.length-1-suf] === cw[cw.length-1-suf]) suf++;
-  const origDisplay = (suf > 0 ? ow.slice(pre, ow.length - suf) : ow.slice(pre)).join(' ') || original;
-  const corrDisplay = (suf > 0 ? cw.slice(pre, cw.length - suf) : cw.slice(pre)).join(' ') || corrected;
+  const ctx = 2;
+  const preCtx = ow.slice(Math.max(0, pre - ctx), pre);
+  const sufCtx = suf > 0 ? ow.slice(ow.length - suf, ow.length - suf + 1) : [];
+  const origMid = suf > 0 ? ow.slice(pre, ow.length - suf) : ow.slice(pre);
+  const corrMid = suf > 0 ? cw.slice(pre, cw.length - suf) : cw.slice(pre);
+  const origDisplay = [...preCtx, ...origMid, ...sufCtx].join(' ') || original;
+  const corrDisplay = [...preCtx, ...corrMid, ...sufCtx].join(' ') || corrected;
 
   // ── Calculate vertical centering ──
   const origSize = origDisplay.length < 20 ? 80 : origDisplay.length < 40 ? 60 : 44;
