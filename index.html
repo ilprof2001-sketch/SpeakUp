@@ -984,16 +984,22 @@
 
   .corr-deep {
     margin-top: 10px;
-    padding: 12px 14px;
     background: var(--accent-light);
     border-radius: var(--r);
     font-size: 13px;
     color: var(--accent-text);
-    line-height: 1.7;
     display: none;
     animation: fadeUp 0.25s ease both;
+    overflow: hidden;
   }
   .corr-deep.visible { display: block; }
+  .deep-line {
+    padding: 10px 14px;
+    line-height: 1.6;
+  }
+  .deep-line + .deep-line {
+    border-top: 1px solid rgba(108,71,255,0.1);
+  }
 
   .btn-new-session {
     width: 100%;
@@ -1861,7 +1867,13 @@ async function tellMeMore(btn) {
     });
     const data = await response.json();
     if (data.text) {
-      deepEl.textContent = data.text;
+      const lines = data.text.split('\n').filter(l => l.trim());
+      deepEl.innerHTML = lines.map(line => {
+        const html = escHtml(line)
+          .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+          .replace(/\*(.+?)\*/g, '<em>$1</em>');
+        return `<div class="deep-line">${html}</div>`;
+      }).join('');
       deepEl.classList.add('visible');
       btn.querySelector('.tell-label').textContent = 'Show less';
     }
