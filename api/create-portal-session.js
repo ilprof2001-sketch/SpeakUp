@@ -19,14 +19,18 @@ export default async function handler(req, res) {
   try {
     const { payload } = await jwtVerify(token, JWKS);
     const user = await clerk.users.getUser(payload.sub);
-    const email = user.emailAddresses[0]?.emailAddress;
-    if (!email) return res.status(400).json({ error: 'No email found' });
+    const emails = user.emailAddresses.map(e => e.emailAddress).filter(Boolean);
+    if (emails.length === 0) return res.status(400).json({ error: 'No email found' });
 
-    const customers = await stripe.customers.list({ email, limit: 1 });
-    if (customers.data.length === 0) return res.status(404).json({ error: 'No Stripe customer found' });
+    let customer = null;
+    for (const email of emails) {
+      const result = await stripe.customers.list({ email, limit: 1 });
+      if (result.data.length > 0) { customer = result.data[0]; break; }
+    }
+    if (!customer) return res.status(404).json({ error: 'No Stripe customer found' });
 
     const session = await stripe.billingPortal.sessions.create({
-      customer: customers.data[0].id,
+      customer: customer.id,
       return_url: 'https://aftercall.tech',
     });
 
