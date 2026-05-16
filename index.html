@@ -1774,7 +1774,12 @@ function updateUserButton() {
     updateBadge();
   }
 }
-function handleUpgrade() { window.open('https://buy.stripe.com/5kQbJ18OZ1BAa5ic8K5AQ00', '_blank'); }
+function handleUpgrade() {
+  const base = 'https://buy.stripe.com/5kQbJ18OZ1BAa5ic8K5AQ00';
+  const email = isLoggedIn() && window.Clerk.user?.primaryEmailAddress?.emailAddress;
+  const url = email ? `${base}?prefilled_email=${encodeURIComponent(email)}` : base;
+  window.open(url, '_blank');
+}
 async function handleManageSubscription() {
   try {
     const token = await window.Clerk.session.getToken();

@@ -19,13 +19,16 @@ export default async function handler(req, res) {
   try {
     const { payload } = await jwtVerify(token, JWKS);
     const user = await clerk.users.getUser(payload.sub);
-    const emails = user.emailAddresses.map(e => e.emailAddress).filter(Boolean);
-    if (emails.length === 0) return res.status(400).json({ error: 'No email found' });
-
     let customer = null;
-    for (const email of emails) {
-      const result = await stripe.customers.list({ email, limit: 1 });
-      if (result.data.length > 0) { customer = result.data[0]; break; }
+    const storedId = user.publicMetadata?.stripeCustomerId;
+    if (storedId) {
+      customer = await stripe.customers.retrieve(storedId);
+    } else {
+      const emails = user.emailAddresses.map(e => e.emailAddress).filter(Boolean);
+      for (const email of emails) {
+        const result = await stripe.customers.list({ email, limit: 1 });
+        if (result.data.length > 0) { customer = result.data[0]; break; }
+      }
     }
     if (!customer) return res.status(404).json({ error: 'No Stripe customer found' });
 

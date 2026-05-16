@@ -47,8 +47,9 @@ export default async function handler(req, res) {
         const users = await clerk.users.getUserList({ emailAddress: [customerEmail] });
         if (users.data.length > 0) {
           const user = users.data[0];
+          const customerId = session.customer || null;
           await clerk.users.updateUserMetadata(user.id, {
-            publicMetadata: { premium: true }
+            publicMetadata: { premium: true, stripeCustomerId: customerId }
           });
           console.log('Premium unlocked for:', customerEmail);
         }
