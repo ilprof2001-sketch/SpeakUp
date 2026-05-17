@@ -1556,7 +1556,7 @@ async function startRecording() {
   document.getElementById('error-box').classList.remove('visible');
   updateRing(0);
   let stream;
-  try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); }
+  try { stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true } }); }
   catch(e) { showError('Microphone access denied. Please allow microphone access and try again.'); return; }
   try {
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
