@@ -70,6 +70,7 @@ CATEGORIES — choose carefully, do NOT default to "grammar":
 
 STRICT RULES:
 - Prioritise errors that most damage how a native speaker perceives the speaker — not the first errors you find. Pick the most impactful ones across the whole transcript.
+- Never correct punctuation alone. Only flag errors that affect meaning, naturalness or grammar.
 - Only correct real errors. Ask: "Would a native speaker consider this WRONG?" If no, skip it.
 - NEVER swap synonyms or rewrite correct sentences just because another version exists.
 - If the text is already good English, return an empty array [].
